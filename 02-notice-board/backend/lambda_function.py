@@ -5,11 +5,12 @@ from bson.errors import InvalidId
 from pymongo import MongoClient
 from datetime import datetime, timezone
 
-MONGO_URI = os.environ["MONGO_URI"]
+MONGO_HOST = os.environ["MONGO_HOST"]
+MONGO_PORT = int(os.environ.get("MONGO_PORT", 27017))
 
 
 def get_collection():
-    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    client = MongoClient(host=MONGO_HOST, port=MONGO_PORT, serverSelectionTimeoutMS=5000)
     return client["noticeboard"]["notices"]
 
 
@@ -50,14 +51,9 @@ def lambda_handler(event, context):
 
 
 def get_notices():
-    notices = list(
-        get_collection()
-        .find({}, {"_id": 1, "name": 1, "message": 1, "created_at": 1, "urgent": 1})
-        .sort([("urgent", -1), ("created_at", -1)])
-    )
+    notices = list(get_collection().find({}, {"_id": 1, "name": 1, "message": 1, "created_at": 1}))
     for n in notices:
         n["id"] = str(n.pop("_id"))
-        n.setdefault("urgent", False)
     return response(200, {"notices": notices})
 
 def create_notice(data):
@@ -69,7 +65,6 @@ def create_notice(data):
     notice = {
         "name": name,
         "message": message,
-        "urgent": bool(data.get("urgent", False)),
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
 

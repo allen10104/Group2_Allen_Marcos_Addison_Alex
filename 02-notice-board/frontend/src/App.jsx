@@ -6,7 +6,6 @@ export default function App() {
   const [error, setError] = useState(null)
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
-  const [urgent, setUrgent] = useState(false)
 
   const loadNotices = () => {
     getNotices()
@@ -23,10 +22,9 @@ export default function App() {
     if (!name.trim() || !message.trim()) return
 
     try {
-      await createNotice({ name, message, urgent })
+      await createNotice({ name, message })
       setName('')
       setMessage('')
-      setUrgent(false)
       loadNotices()
     } catch (err) {
       setError(err.message)
@@ -61,46 +59,13 @@ export default function App() {
           onChange={(e) => setMessage(e.target.value)}
           style={{ display: 'block', width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
         />
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}>
-          <input
-            type="checkbox"
-            checked={urgent}
-            onChange={(e) => setUrgent(e.target.checked)}
-          />
-          Mark as urgent
-        </label>
         <button type="submit">Post Notice</button>
       </form>
 
       {notices.length === 0 && !error && <p>No notices yet.</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {notices.map((n) => (
-          <li
-            key={n.id}
-            style={{
-              position: 'relative',
-              border: n.urgent ? '2px solid #d32f2f' : '1px solid #ddd',
-              background: n.urgent ? '#fdecea' : 'transparent',
-              borderRadius: 8,
-              padding: '1rem',
-              marginBottom: '0.75rem',
-            }}
-          >
-            {n.urgent && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '0.75rem',
-                  right: '1rem',
-                  color: '#d32f2f',
-                  fontWeight: 'bold',
-                  fontSize: '0.75rem',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                URGENT
-              </span>
-            )}
+          <li key={n.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: '1rem', marginBottom: '0.75rem' }}>
             <strong>{n.name}</strong>
             <p style={{ margin: '0.5rem 0 0' }}>{n.message}</p>
             <button onClick={() => handleDelete(n.id)} style={{ marginTop: '0.5rem' }}>Delete</button>
