@@ -5,12 +5,11 @@ from bson.errors import InvalidId
 from pymongo import MongoClient
 from datetime import datetime, timezone
 
-MONGO_HOST = os.environ["MONGO_HOST"]
-MONGO_PORT = int(os.environ.get("MONGO_PORT", 27017))
+MONGO_URI = os.environ["MONGO_URI"]
 
 
 def get_collection():
-    client = MongoClient(host=MONGO_HOST, port=MONGO_PORT, serverSelectionTimeoutMS=5000)
+    client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
     return client["noticeboard"]["notices"]
 
 
