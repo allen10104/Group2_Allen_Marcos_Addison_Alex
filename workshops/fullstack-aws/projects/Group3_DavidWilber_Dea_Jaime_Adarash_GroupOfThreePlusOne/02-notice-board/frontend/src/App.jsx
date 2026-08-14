@@ -6,10 +6,17 @@ export default function App() {
   const [error, setError] = useState(null)
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
+  const [urgent, setUrgent] = useState(false)
 
   const loadNotices = () => {
     getNotices()
-      .then((data) => setNotices(data.notices || []))
+      .then((data) => {
+        const sorted = (data.notices || []).slice().sort((a, b) => {
+          if (!!a.urgent !== !!b.urgent) return a.urgent ? -1 : 1
+          return new Date(b.created_at) - new Date(a.created_at)
+        })
+        setNotices(sorted)
+      })
       .catch((err) => setError(err.message))
   }
 
@@ -22,9 +29,10 @@ export default function App() {
     if (!name.trim() || !message.trim()) return
 
     try {
-      await createNotice({ name, message })
+      await createNotice({ name, message, urgent })
       setName('')
       setMessage('')
+      setUrgent(false)
       loadNotices()
     } catch (err) {
       setError(err.message)
@@ -59,13 +67,31 @@ export default function App() {
           onChange={(e) => setMessage(e.target.value)}
           style={{ display: 'block', width: '100%', marginBottom: '0.5rem', padding: '0.5rem' }}
         />
+        <label style={{ display: 'block', marginBottom: '0.75rem' }}>
+          <input
+            type="checkbox"
+            checked={urgent}
+            onChange={(e) => setUrgent(e.target.checked)}
+            style={{ marginRight: '0.4rem' }}
+          />
+          Urgent
+        </label>
         <button type="submit">Post Notice</button>
       </form>
 
       {notices.length === 0 && !error && <p>No notices yet.</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
         {notices.map((n) => (
-          <li key={n.id} style={{ border: '1px solid #ddd', borderRadius: 8, padding: '1rem', marginBottom: '0.75rem' }}>
+          <li
+            key={n.id}
+            style={{
+              border: `1px solid ${n.urgent ? '#f0d97d' : '#ddd'}`,
+              background: n.urgent ? '#fff8db' : '#fff',
+              borderRadius: 8,
+              padding: '1rem',
+              marginBottom: '0.75rem',
+            }}
+          >
             <strong>{n.name}</strong>
             <p style={{ margin: '0.5rem 0 0' }}>{n.message}</p>
             <button onClick={() => handleDelete(n.id)} style={{ marginTop: '0.5rem' }}>Delete</button>
