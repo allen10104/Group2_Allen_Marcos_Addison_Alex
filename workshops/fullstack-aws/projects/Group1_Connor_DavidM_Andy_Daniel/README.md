@@ -29,3 +29,8 @@ A full-stack notice board application: React frontend, Python Lambda backend, Mo
 | GET | `/notices` | Return all notices |
 | POST | `/notices` | Create a notice `{ "name": "...", "message": "..." }` |
 | DELETE | `/notices/{id}` | Delete a notice by ID |
+
+# Group 1's Unique Selling Point!
+We added a priority feature to notices in which notices can be marked as important.
+- Important notices show up in a unique bright yellow card.
+- Important notices appear before regular notices.

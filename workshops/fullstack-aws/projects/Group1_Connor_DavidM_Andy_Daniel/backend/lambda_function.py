@@ -50,7 +50,7 @@ def lambda_handler(event, context):
 
 
 def get_notices():
-    notices = list(get_collection().find({}, {"_id": 1, "name": 1, "message": 1, "created_at": 1}))
+    notices = list(get_collection().find({}, {"_id": 1, "name": 1, "message": 1, "created_at": 1, "priority": 1}))
     for n in notices:
         n["id"] = str(n.pop("_id"))
     return response(200, {"notices": notices})
@@ -58,12 +58,14 @@ def get_notices():
 def create_notice(data):
     name = data.get("name", "").strip()
     message = data.get("message", "").strip()
+    priority = bool(data.get("priority", False))
     if not name or not message:
         return response(400, {"error": "Missing 'name' or 'message' in request body"})
 
     notice = {
         "name": name,
         "message": message,
+        "priority": priority,
         "created_at": datetime.now(timezone.utc).isoformat(),
     }
 
