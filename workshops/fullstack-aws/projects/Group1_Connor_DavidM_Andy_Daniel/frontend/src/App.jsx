@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getNotices, createNotice, deleteNotice } from './api'
+import SearchBar from './SearchBar'
 
 export default function App() {
   const [notices, setNotices] = useState([])
@@ -7,6 +8,8 @@ export default function App() {
   const [name, setName] = useState('')
   const [message, setMessage] = useState('')
   const [priority, setPriority] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchField, setSearchField] = useState('name')
 
   const loadNotices = () => {
     getNotices()
@@ -45,6 +48,15 @@ export default function App() {
     }
   }
 
+  const handleSearch = (query, field) => {
+    setSearchQuery(query)
+    setSearchField(field)
+  }
+
+  const visibleNotices = notices.filter((n) =>
+    (n[searchField] || '').toLowerCase().includes(searchQuery.toLowerCase())
+  )
+
   return (
     <div style={{ maxWidth: 600, margin: '2rem auto', fontFamily: 'sans-serif' }}>
       <h1>Notice Board</h1>
@@ -75,9 +87,11 @@ export default function App() {
         <button type="submit">Post Notice</button>
       </form>
 
-      {notices.length === 0 && !error && <p>No notices yet.</p>}
+      <SearchBar onSearch={handleSearch} />
+
+      {visibleNotices.length === 0 && !error && <p>No notices found.</p>}
       <ul style={{ listStyle: 'none', padding: 0 }}>
-        {notices.map((n) => (
+        {visibleNotices.map((n) => (
           <li
             key={n.id}
             style={{
