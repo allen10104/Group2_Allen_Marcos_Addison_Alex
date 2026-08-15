@@ -1,0 +1,204 @@
+/* Simple, minimal styling for the notice board -- reuses the color
+   variables already defined in index.css (--text, --bg, --accent, etc.)
+   so this matches the scaffold's look without adding a design system. */
+
+.auth-page {
+  display: flex;
+  justify-content: center;
+  padding: 64px 16px;
+}
+
+.auth-form {
+  width: 100%;
+  max-width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 32px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.auth-form h1 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.auth-form input {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.auth-form button {
+  margin-top: 8px;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.auth-switch {
+  font-size: 14px;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.field-hint {
+  margin: -6px 0 0;
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.7;
+}
+
+.form-error {
+  background: rgba(220, 38, 38, 0.1);
+  color: #b91c1c;
+  border: 1px solid rgba(220, 38, 38, 0.3);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.board-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+.board-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.board-header h1 {
+  font-size: 24px;
+  margin: 0;
+}
+
+.board-header-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.board-header-user button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.notice-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.notice-form input,
+.notice-form textarea,
+.notice-edit-form input,
+.notice-edit-form textarea {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  resize: vertical;
+}
+
+.notice-form textarea,
+.notice-edit-form textarea {
+  min-height: 80px;
+}
+
+.notice-form button {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notice-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.notice-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+
+.notice-card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.notice-card p {
+  margin: 0 0 8px;
+  white-space: pre-wrap;
+}
+
+.notice-meta {
+  font-size: 12px;
+  color: var(--text);
+  opacity: 0.6;
+}
+
+.notice-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.notice-actions button {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.notice-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
