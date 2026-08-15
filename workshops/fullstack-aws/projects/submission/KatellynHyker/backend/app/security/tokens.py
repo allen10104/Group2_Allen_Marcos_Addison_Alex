@@ -17,9 +17,9 @@ if not JWT_SECRET_KEY:
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
-def create_access_token(data: dict, expires_delta: timedelta = None) -> str:
+def create_access_token(user) -> str:
     """
-    Create a JWT access token.
+    Create a JWT access token for `user` (a UserORM row).
 
     """
     now = datetime.now(timezone.utc)

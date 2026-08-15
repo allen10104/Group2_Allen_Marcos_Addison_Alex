@@ -6,63 +6,52 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.database import NoticeORM, UserORM
-from app.models.exceptions import NotFoundError, UnauthorizedError
+from app.models.exceptions import ForbiddenError, NotFoundError
+from app.models.schemas import NoticeCreate, NoticeUpdate
 
-def list_notices(db: Session, user_id: int):
-    """List all notices for a given user."""
-    user = db.get(UserORM, user_id)
-    if not user:
-        raise NotFoundError(f"User with ID {user_id} not found.")
-
-    notices = db.execute(select(NoticeORM).where(NoticeORM.user_id == user_id)).scalars().all()
+def list_notices(db: Session):
+    """List every notice on the board, newest first. Shared board -- any
+    authenticated user can see every notice, not just their own."""
+    notices = db.execute(select(NoticeORM).order_by(NoticeORM.created_at.desc())).scalars().all()
     return notices
 
-def get_notice(db: Session, notice_id: int, user_id: int):
-    """Get a specific notice by ID for a given user."""
+def get_notice(notice_id: str, db: Session):
+    """Get a specific notice by ID. Any authenticated user may view it."""
     notice = db.get(NoticeORM, notice_id)
     if not notice:
         raise NotFoundError(f"Notice with ID {notice_id} not found.")
-    if notice.user_id != user_id:
-        raise UnauthorizedError("You do not have permission to access this notice.")
     return notice
 
-def create_notice(db: Session, user_id: int, title: str, content: str):
-    """Create a new notice for a given user."""
-    user = db.get(UserORM, user_id)
-    if not user:
-        raise NotFoundError(f"User with ID {user_id} not found.")
-
-    new_notice = NoticeORM(user_id=user_id, title=title, content=content)
+def create_notice(request: NoticeCreate, db: Session, current_user: UserORM):
+    """Create a new notice authored by the current user."""
+    new_notice = NoticeORM(
+        user_id=current_user.user_id, title=request.title, content=request.content
+    )
     db.add(new_notice)
     db.commit()
     db.refresh(new_notice)
     return new_notice
 
-def update_notice(db: Session, notice_id: int, user_id: int, title: str = None, content: str = None):
-    """Update an existing notice for a given user."""
-    notice = db.get(NoticeORM, notice_id)
-    if not notice:
-        raise NotFoundError(f"Notice with ID {notice_id} not found.")
-    if notice.user_id != user_id:
-        raise UnauthorizedError("You do not have permission to update this notice.")
+def update_notice(notice_id: str, request: NoticeUpdate, db: Session, current_user: UserORM):
+    """Update an existing notice. Only the notice's author may edit it."""
+    notice = get_notice(notice_id, db)
+    if notice.user_id != current_user.user_id:
+        raise ForbiddenError("You can only edit your own notices.")
 
-    if title is not None:
-        notice.title = title
-    if content is not None:
-        notice.content = content
+    if request.title is not None:
+        notice.title = request.title
+    if request.content is not None:
+        notice.content = request.content
 
     db.commit()
     db.refresh(notice)
     return notice
 
-def delete_notice(db: Session, notice_id: int, user_id: int):
-    """Delete a notice for a given user."""
-    notice = db.get(NoticeORM, notice_id)
-    if not notice:
-        raise NotFoundError(f"Notice with ID {notice_id} not found.")
-    if notice.user_id != user_id:
-        raise UnauthorizedError("You do not have permission to delete this notice.")
+def delete_notice(notice_id: str, db: Session, current_user: UserORM):
+    """Delete a notice. Only the notice's author may delete it."""
+    notice = get_notice(notice_id, db)
+    if notice.user_id != current_user.user_id:
+        raise ForbiddenError("You can only delete your own notices.")
 
     db.delete(notice)
     db.commit()
-    return notice

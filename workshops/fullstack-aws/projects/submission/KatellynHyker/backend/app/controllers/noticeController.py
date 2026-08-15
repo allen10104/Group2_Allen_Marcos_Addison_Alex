@@ -16,7 +16,7 @@ def list_notices(db: Session = Depends(get_db), current_user: UserORM = Depends(
     return [n.to_dict() for n in notices]
 
 @router.get("/{notice_id}")
-def get_notice(notice_id: int, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
+def get_notice(notice_id: str, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     notice = noticeService.get_notice(notice_id, db)
     return notice.to_dict()
 
@@ -26,10 +26,10 @@ def create_notice(request: NoticeCreate, db: Session = Depends(get_db), current_
     return notice.to_dict()
 
 @router.put("/{notice_id}")
-def update_notice(notice_id: int, request: NoticeUpdate, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
+def update_notice(notice_id: str, request: NoticeUpdate, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     notice = noticeService.update_notice(notice_id, request, db, current_user)
     return notice.to_dict()
 
 @router.delete("/{notice_id}", status_code=204)
-def delete_notice(notice_id: int, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
+def delete_notice(notice_id: str, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     noticeService.delete_notice(notice_id, db, current_user)

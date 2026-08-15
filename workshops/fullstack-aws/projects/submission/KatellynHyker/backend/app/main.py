@@ -107,3 +107,12 @@ def validation_error_handler(request: Request, exc: ValidationError):
         status_code=422,
         content={"detail": exc.detail},
     )
+
+@app.exception_handler(Exception)
+def generic_exception_handler(request: Request, exc: Exception):
+    """ Catch-all so an unexpected bug returns a clean 500 instead of a
+    raw stack trace / connection reset. """
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error."},
+    )
