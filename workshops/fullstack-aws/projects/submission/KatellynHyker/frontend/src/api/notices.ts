@@ -6,25 +6,25 @@ import { apiClient } from "./client";
 import type { Notice, NoticeCreatePayload, NoticeUpdatePayload } from "../types/notice";
 
 export async function getNotices(): Promise<Notice[]> {
-    const response = await apiClient.get<Notice[]>("/notices");
+    const response = await apiClient.get<Notice[]>("/notice");
     return response.data;
 }
 
 export async function getNoticeById(noticeId: string): Promise<Notice> {
-    const response = await apiClient.get<Notice>(`/notices/${noticeId}`);
+    const response = await apiClient.get<Notice>(`/notice/${noticeId}`);
     return response.data;
 }
 
 export async function createNotice(payload: NoticeCreatePayload): Promise<Notice> {
-    const response = await apiClient.post<Notice>("/notices", payload);
+    const response = await apiClient.post<Notice>("/notice", payload);
     return response.data;
 }
 
 export async function updateNotice(noticeId: string, payload: NoticeUpdatePayload): Promise<Notice> {
-    const response = await apiClient.put<Notice>(`/notices/${noticeId}`, payload);
+    const response = await apiClient.put<Notice>(`/notice/${noticeId}`, payload);
     return response.data;
 }
 
 export async function deleteNotice(noticeId: string): Promise<void> {
-    await apiClient.delete(`/notices/${noticeId}`);
+    await apiClient.delete(`/notice/${noticeId}`);
 }
