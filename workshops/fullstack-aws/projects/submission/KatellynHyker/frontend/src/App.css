@@ -1,6 +1,6 @@
-/* Simple, minimal styling for the notice board -- reuses the color
-   variables already defined in index.css (--text, --bg, --accent, etc.)
-   so this matches the scaffold's look without adding a design system. */
+/* Styling for the notice board -- reuses the color variables already
+   defined in index.css (--text, --bg, --accent, --shadow, etc.) so this
+   matches the scaffold's palette without adding a design system. */
 
 .auth-page {
   display: flex;
@@ -10,18 +10,21 @@
 
 .auth-form {
   width: 100%;
-  max-width: 360px;
+  max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 32px;
+  gap: 14px;
+  padding: 36px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
 }
 
 .auth-form h1 {
   margin: 0 0 8px;
-  font-size: 22px;
+  font-size: 24px;
+  color: var(--text-h);
 }
 
 .auth-form label {
@@ -32,21 +35,34 @@
 }
 
 .auth-form input {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   font: inherit;
+  transition: border-color 0.15s;
+}
+
+.auth-form input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .auth-form button {
   margin-top: 8px;
-  padding: 10px;
+  padding: 11px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--accent);
   color: white;
   font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.auth-form button:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .auth-form button:disabled {
@@ -61,7 +77,7 @@
 }
 
 .field-hint {
-  margin: -6px 0 0;
+  margin: -8px 0 0;
   font-size: 12px;
   color: var(--text);
   opacity: 0.7;
@@ -71,13 +87,13 @@
   background: rgba(220, 38, 38, 0.1);
   color: #b91c1c;
   border: 1px solid rgba(220, 38, 38, 0.3);
-  border-radius: 6px;
-  padding: 8px 10px;
+  border-radius: 8px;
+  padding: 10px 12px;
   font-size: 14px;
 }
 
 .board-page {
-  max-width: 640px;
+  max-width: 680px;
   margin: 0 auto;
   padding: 32px 16px 64px;
 }
@@ -87,11 +103,14 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .board-header h1 {
-  font-size: 24px;
+  font-size: 26px;
   margin: 0;
+  color: var(--text-h);
 }
 
 .board-header-user {
@@ -102,32 +121,49 @@
 }
 
 .board-header-user button {
-  padding: 6px 12px;
+  padding: 7px 14px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
+  transition: background 0.15s;
+}
+
+.board-header-user button:hover {
+  background: var(--social-bg);
 }
 
 .notice-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 32px;
-  padding: 16px;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding: 18px;
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: 12px;
+  background: var(--bg);
+  box-shadow: var(--shadow);
 }
 
 .notice-form input,
 .notice-form textarea,
 .notice-edit-form input,
 .notice-edit-form textarea {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   font: inherit;
   resize: vertical;
+  transition: border-color 0.15s;
+}
+
+.notice-form input:focus-visible,
+.notice-form textarea:focus-visible,
+.notice-edit-form input:focus-visible,
+.notice-edit-form textarea:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 .notice-form textarea,
@@ -137,18 +173,96 @@
 
 .notice-form button {
   align-self: flex-start;
-  padding: 8px 16px;
+  padding: 9px 18px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--accent);
   color: white;
   font-weight: 600;
   cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.notice-form button:hover:not(:disabled) {
+  opacity: 0.9;
 }
 
 .notice-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.board-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.board-search {
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font: inherit;
+  transition: border-color 0.15s;
+}
+
+.board-search:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-bg);
+}
+
+.board-toolbar-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.segmented-control {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.segmented-control button {
+  padding: 6px 14px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font: inherit;
+  color: var(--text);
+}
+
+.segmented-control button + button {
+  border-left: 1px solid var(--border);
+}
+
+.segmented-control button.active {
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+}
+
+.board-sort {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  font: inherit;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.board-count {
+  font-size: 13px;
+  color: var(--text);
+  opacity: 0.65;
+  margin: 0 0 16px;
 }
 
 .notice-list {
@@ -162,43 +276,97 @@
 
 .notice-card {
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 18px;
+  background: var(--bg);
+  transition: box-shadow 0.15s;
+}
+
+.notice-card:hover {
+  box-shadow: var(--shadow);
 }
 
 .notice-card h2 {
   margin: 0 0 8px;
   font-size: 18px;
+  color: var(--text-h);
 }
 
-.notice-card p {
-  margin: 0 0 8px;
+.notice-content {
+  margin: 0 0 10px;
   white-space: pre-wrap;
+  line-height: 1.5;
 }
 
 .notice-meta {
   font-size: 12px;
   color: var(--text);
-  opacity: 0.6;
+  opacity: 0.65;
+  margin: 0;
+}
+
+.notice-edited {
+  font-style: italic;
 }
 
 .notice-actions {
   display: flex;
+  align-items: center;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
 .notice-actions button {
   padding: 6px 12px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: transparent;
   cursor: pointer;
   font-size: 13px;
+  transition: background 0.15s;
+}
+
+.notice-actions button:hover {
+  background: var(--social-bg);
+}
+
+.notice-action-secondary {
+  color: var(--text);
+}
+
+.notice-action-danger {
+  border-color: rgba(220, 38, 38, 0.4);
+  color: #b91c1c;
+}
+
+.notice-action-danger:hover {
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.notice-confirm-text {
+  font-size: 13px;
+  color: #b91c1c;
 }
 
 .notice-edit-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .board-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .board-toolbar-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .segmented-control {
+    width: fit-content;
+  }
 }
