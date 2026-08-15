@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { AppNav } from '../components/AppNav'
 import { useAuth, getApiErrorMessage } from '../context/AuthContext'
 import { createNotice, deleteNotice, getNotices, updateNotice } from '../api/notices'
+import { getFollowing } from '../api/users'
 import type { Notice } from '../types/notice'
 
-type FilterMode = 'all' | 'mine'
+type FilterMode = 'all' | 'mine' | 'following'
 type SortOrder = 'newest' | 'oldest'
 
 function formatTimestamp(iso: string): string {
@@ -37,6 +39,7 @@ export function BoardPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterMode, setFilterMode] = useState<FilterMode>('all')
   const [sortOrder, setSortOrder] = useState<SortOrder>('newest')
+  const [followingIds, setFollowingIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     let cancelled = false
@@ -57,12 +60,32 @@ export function BoardPage() {
     }
   }, [])
 
+  useEffect(() => {
+    if (!user) return
+    let cancelled = false
+
+    getFollowing(user.user_id)
+      .then((data) => {
+        if (!cancelled) setFollowingIds(new Set(data.map((u) => u.user_id)))
+      })
+      .catch(() => {
+        // Non-fatal -- the "Following" filter just shows nothing until a
+        // retry succeeds; the rest of the board still works.
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [user])
+
   const visibleNotices = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
 
     let result = notices
     if (filterMode === 'mine') {
       result = result.filter((notice) => notice.user_id === user?.user_id)
+    } else if (filterMode === 'following') {
+      result = result.filter((notice) => followingIds.has(notice.user_id))
     }
     if (query) {
       result = result.filter(
@@ -77,7 +100,7 @@ export function BoardPage() {
       const bTime = new Date(b.created_at).getTime()
       return sortOrder === 'newest' ? bTime - aTime : aTime - bTime
     })
-  }, [notices, searchQuery, filterMode, sortOrder, user?.user_id])
+  }, [notices, searchQuery, filterMode, sortOrder, user?.user_id, followingIds])
 
   async function handleCreate(event: FormEvent) {
     event.preventDefault()
@@ -144,7 +167,9 @@ export function BoardPage() {
           </button>
         </div>
       </header>
- 
+
+      <AppNav />
+
       {error && <p className="form-error">{error}</p>}
  
       <form className="notice-form" onSubmit={handleCreate}>
@@ -190,6 +215,13 @@ export function BoardPage() {
               onClick={() => setFilterMode('mine')}
             >
               Mine
+            </button>
+            <button
+              type="button"
+              className={filterMode === 'following' ? 'active' : ''}
+              onClick={() => setFilterMode('following')}
+            >
+              Following
             </button>
           </div>
  

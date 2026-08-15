@@ -3,6 +3,7 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import { LoginPage } from './pages/Login'
 import { RegisterPage } from './pages/Register'
 import { BoardPage } from './pages/Board'
+import { PeoplePage } from './pages/People'
 import './App.css'
 
 function App() {
@@ -15,6 +16,14 @@ function App() {
         element={
           <ProtectedRoute>
             <BoardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/people"
+        element={
+          <ProtectedRoute>
+            <PeoplePage />
           </ProtectedRoute>
         }
       />

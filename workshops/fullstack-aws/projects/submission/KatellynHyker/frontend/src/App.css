@@ -133,6 +133,96 @@
   background: var(--social-bg);
 }
 
+.app-nav {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.app-nav a {
+  padding: 8px 4px;
+  margin-right: 16px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0.65;
+  border-bottom: 2px solid transparent;
+  transition: opacity 0.15s, border-color 0.15s;
+}
+
+.app-nav a:hover {
+  opacity: 1;
+}
+
+.app-nav a.active {
+  opacity: 1;
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.people-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.people-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 18px;
+  background: var(--bg);
+  transition: box-shadow 0.15s;
+}
+
+.people-card:hover {
+  box-shadow: var(--shadow);
+}
+
+.people-email {
+  font-size: 14px;
+}
+
+.people-card button {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: white;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+
+.people-card button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.people-card button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.people-card button.notice-action-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+.people-card button.notice-action-secondary:hover:not(:disabled) {
+  background: var(--social-bg);
+}
+
 .notice-form {
   display: flex;
   flex-direction: column;
@@ -368,5 +458,9 @@
 
   .segmented-control {
     width: fit-content;
+  }
+
+  .people-card {
+    flex-wrap: wrap;
   }
 }
