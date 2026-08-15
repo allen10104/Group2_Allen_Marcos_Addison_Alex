@@ -34,3 +34,15 @@ class NoticeUpdate(BaseModel):
  
     title: str | None = Field(default=None, min_length=1, max_length=200)
     content: str | None = Field(default=None, min_length=1)
+
+
+class CommentCreate(BaseModel):
+    """Body for POST /notice/{notice_id}/comments."""
+
+    content: str = Field(min_length=1, max_length=2000)
+
+
+class CommentUpdate(BaseModel):
+    """Body for PUT /comments/{comment_id}."""
+
+    content: str = Field(min_length=1, max_length=2000)

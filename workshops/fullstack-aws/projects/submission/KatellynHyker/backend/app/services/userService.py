@@ -6,11 +6,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.database import FollowORM, UserORM
-from app.models.exceptions import UserNotFoundException, ValidationException
+from app.models.exceptions import NotFoundError, ValidationError
 
-def list_users(db: Session):
+def list_users(db: Session, current_user_id: str, search: str | None = None):
     """
-    List all users in the database.
+    List all users in the database (excluding yourself), optionally
+    filtered by an email search term.
     """
     query = select(UserORM).where(UserORM.user_id != current_user_id)
     if search:
@@ -47,21 +48,17 @@ def follow_user(db: Session, follower_id: str, followed_id: str):
     Follow a user.
     """
     if follower_id == followed_id:
-        raise ValidationException("You cannot follow yourself.")
+        raise ValidationError("You cannot follow yourself.")
 
     # Check if the followed user exists
     followed_user = db.get(UserORM, followed_id)
     if not followed_user:
-        raise UserNotFoundException(f"User with ID {followed_id} not found.")
+        raise NotFoundError(f"User with ID {followed_id} not found.")
 
     # Check if the follow relationship already exists
-    existing_follow = (
-        db.query(FollowORM)
-        .filter(FollowORM.follower_id == follower_id, FollowORM.followed_id == followed_id)
-        .first()
-    )
+    existing_follow = db.get(FollowORM, (follower_id, followed_id))
     if existing_follow:
-        raise ValidationException("You are already following this user.")
+        raise ValidationError("You are already following this user.")
 
     # Create the follow relationship
     new_follow = FollowORM(follower_id=follower_id, followed_id=followed_id)
@@ -72,14 +69,9 @@ def unfollow_user(db: Session, follower_id: str, followed_id: str):
     """
     Unfollow a user.
     """
-    follow = (
-        db.query(FollowORM)
-        .filter(FollowORM.follower_id == follower_id, FollowORM.followed_id == followed_id)
-        .first()
-    )
+    follow = db.get(FollowORM, (follower_id, followed_id))
     if not follow:
-        raise ValidationException("You are not following this user.")
+        raise ValidationError("You are not following this user.")
 
     db.delete(follow)
     db.commit()
-

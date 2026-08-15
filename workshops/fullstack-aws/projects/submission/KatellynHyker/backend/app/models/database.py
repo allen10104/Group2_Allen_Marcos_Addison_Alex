@@ -66,8 +66,11 @@ class NoticeORM(Base):
 class FollowORM(Base):
     __tablename__ = "follows"
 
-    follower_id = Column(String, ForeignKey("users.user_id"), nullable=False)
-    followed_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    # Composite primary key: a (follower_id, followed_id) pair can only
+    # exist once, so following someone twice is naturally impossible at
+    # the database level instead of needing an application-side check.
+    follower_id = Column(String, ForeignKey("users.user_id"), primary_key=True)
+    followed_id = Column(String, ForeignKey("users.user_id"), primary_key=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
 class CommentORM(Base):
@@ -83,6 +86,17 @@ class CommentORM(Base):
 
     user = relationship("UserORM")
     notice = relationship("NoticeORM")
+
+    def to_dict(self):
+        return {
+            "comment_id": self.comment_id,
+            "content": self.content,
+            "created_at": self.created_at.isoformat(),
+            "updated_at": self.updated_at.isoformat(),
+            "notice_id": self.notice_id,
+            "user_id": self.user_id,
+            "author_email": self.user.email if self.user else None,
+        }
 
 class LikeORM(Base):
     __tablename__ = "likes"
