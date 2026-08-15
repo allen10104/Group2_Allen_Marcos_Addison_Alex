@@ -59,6 +59,7 @@ class NoticeORM(Base):
             "content": self.content,
             "created_at": self.created_at.isoformat(),
             "user_id": self.user_id,
+            "author_email": self.user.email if self.user else None,
             "updated_at": self.updated_at.isoformat(),
         }
 
