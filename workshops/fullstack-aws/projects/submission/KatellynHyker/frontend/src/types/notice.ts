@@ -9,6 +9,7 @@ export type Notice = {
     created_at: string;
     updated_at: string;
     user_id: string;
+    author_email: string;
 };
 
 export type NoticeCreatePayload = {
