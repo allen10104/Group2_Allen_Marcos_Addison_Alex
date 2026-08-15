@@ -15,6 +15,9 @@ class NotFoundError(AppError):
  
 class DuplicateError(AppError):
     """Attempted to create something that already exists (e.g. email taken)."""
+
+class ForbiddenError(AppError):
+    """User is authenticated but does not have permission to perform the action."""
  
  
 class ValidationError(AppError):
