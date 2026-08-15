@@ -1,77 +1,48 @@
-"""
-Business logic for user service
-"""
+""" Route handlers for user-related operations. """
 
-from sqlalchemy import select
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from app.models.database import FollowORM, UserORM
-from app.models.exceptions import NotFoundError, ValidationError
+from app.models.database import UserORM, get_db
+from app.security.dependencies import get_current_user
+from app.services import userService
 
-def list_users(db: Session, current_user_id: str, search: str | None = None):
-    """
-    List all users in the database (excluding yourself), optionally
-    filtered by an email search term.
-    """
-    query = select(UserORM).where(UserORM.user_id != current_user_id)
-    if search:
-        query = query.where(UserORM.email.ilike(f"%{search}%"))
-    query = query.order_by(UserORM.email.asc())
-    return db.execute(query).scalars().all()
+router = APIRouter(prefix="/users", tags=["users"])
 
-def list_followed_users(db: Session, user_id: str):
+@router.get("")
+def list_users(search: str | None = None, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
+    """
+    List all users in the database, optionally filtered by a search term.
+    """
+    users = userService.list_users(db, current_user.user_id, search)
+    return [u.to_dict() for u in users]
+
+@router.get("/{user_id}/following")
+def list_followed_users(user_id: str, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     """
     List all users that the given user is following.
     """
-    query = (
-        select(UserORM)
-        .join(FollowORM, FollowORM.followed_id == UserORM.user_id)
-        .where(FollowORM.follower_id == user_id)
-        .order_by(UserORM.email.asc())
-    )
-    return db.execute(query).scalars().all()
+    users = userService.list_followed_users(db, user_id)
+    return [u.to_dict() for u in users]
 
-def list_followers(db: Session, user_id: str):
+@router.get("/{user_id}/followers")
+def list_followers(user_id: str, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     """
     List all users that are following the given user.
     """
-    query = (
-        select(UserORM)
-        .join(FollowORM, FollowORM.follower_id == UserORM.user_id)
-        .where(FollowORM.followed_id == user_id)
-        .order_by(UserORM.email.asc())
-    )
-    return db.execute(query).scalars().all()
+    users = userService.list_followers(db, user_id)
+    return [u.to_dict() for u in users]
 
-def follow_user(db: Session, follower_id: str, followed_id: str):
+@router.post("/{user_id}/follow", status_code=204)
+def follow_user(user_id: str, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     """
     Follow a user.
     """
-    if follower_id == followed_id:
-        raise ValidationError("You cannot follow yourself.")
+    userService.follow_user(db, current_user.user_id, user_id)
 
-    # Check if the followed user exists
-    followed_user = db.get(UserORM, followed_id)
-    if not followed_user:
-        raise NotFoundError(f"User with ID {followed_id} not found.")
-
-    # Check if the follow relationship already exists
-    existing_follow = db.get(FollowORM, (follower_id, followed_id))
-    if existing_follow:
-        raise ValidationError("You are already following this user.")
-
-    # Create the follow relationship
-    new_follow = FollowORM(follower_id=follower_id, followed_id=followed_id)
-    db.add(new_follow)
-    db.commit()
-
-def unfollow_user(db: Session, follower_id: str, followed_id: str):
+@router.delete("/{user_id}/unfollow", status_code=204)
+def unfollow_user(user_id: str, db: Session = Depends(get_db), current_user: UserORM = Depends(get_current_user)):
     """
     Unfollow a user.
     """
-    follow = db.get(FollowORM, (follower_id, followed_id))
-    if not follow:
-        raise ValidationError("You are not following this user.")
-
-    db.delete(follow)
-    db.commit()
+    userService.unfollow_user(db, current_user.user_id, user_id)
