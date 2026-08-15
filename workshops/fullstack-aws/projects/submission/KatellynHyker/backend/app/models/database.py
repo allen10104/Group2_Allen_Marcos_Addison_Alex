@@ -63,6 +63,34 @@ class NoticeORM(Base):
             "updated_at": self.updated_at.isoformat(),
         }
 
+class FollowORM(Base):
+    __tablename__ = "follows"
+
+    follower_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    followed_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class CommentORM(Base):
+    __tablename__ = "comments"
+
+    comment_id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    notice_id = Column(String, ForeignKey("notices.notice_id"), nullable=False)
+    user_id = Column(String, ForeignKey("users.user_id"), nullable=False)
+
+    user = relationship("UserORM")
+    notice = relationship("NoticeORM")
+
+class LikeORM(Base):
+    __tablename__ = "likes"
+
+    user_id = Column(String, ForeignKey("users.user_id"), primary_key=True)
+    notice_id = Column(String, ForeignKey("notices.notice_id"), primary_key=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 def get_db():
     db = SessionLocal()
     try:

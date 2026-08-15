@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.controllers.authController import router as auth_router
 from app.controllers.noticeController import router as notice_router
+from app.controllers.userController import router as user_router
 from app.models.database import init_db
 from app.models.exceptions import (
     AppError,
@@ -24,6 +25,7 @@ app = FastAPI(title="Notice Board API")
 
 app.include_router(auth_router)
 app.include_router(notice_router)
+app.include_router(user_router)
 
 _cors_origins = [
     origin.strip()
