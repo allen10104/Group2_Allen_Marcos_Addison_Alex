@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { login, register } from './api.js'
+import { login, register } from '../api.js'
 
+/** Combined login/register screen. Email is only collected on registration. */
 export default function LoginForm({ onAuthed, onCancel }) {
   const [mode, setMode] = useState('login')
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
@@ -16,7 +18,7 @@ export default function LoginForm({ onAuthed, onCancel }) {
       if (mode === 'login') {
         await login(username, password)
       } else {
-        await register(username, password)
+        await register(username, email, password)
       }
       onAuthed()
     } catch (err) {
@@ -47,6 +49,16 @@ export default function LoginForm({ onAuthed, onCancel }) {
           minLength={3}
           required
         />
+        {mode === 'register' && (
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+            required
+          />
+        )}
         <input
           type="password"
           placeholder="Password"

@@ -1,3 +1,8 @@
+// Every network call the frontend makes goes through this module.
+// The JWT is decoded client-side (never verified) just to read the
+// username/is_admin claims for UI purposes — the backend re-verifies
+// the signature on every protected request, so this is display-only.
+
 const API_URL = import.meta.env.VITE_API_URL
 
 async function request(path, options = {}) {
@@ -46,10 +51,10 @@ export async function login(username, password) {
   return data
 }
 
-export async function register(username, password) {
+export async function register(username, email, password) {
   const data = await request('/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ username, email, password }),
   })
   localStorage.setItem('token', data.access_token)
   return data

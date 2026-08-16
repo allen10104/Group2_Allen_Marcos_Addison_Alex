@@ -8,6 +8,14 @@ variable "aws_region" {
   default = "us-east-1"
 }
 
+# Students in this shared training account cannot create IAM roles
+# (iam:CreateRole is denied). Every Lambda function already deployed in
+# this account instead reuses this pre-provisioned execution role.
+variable "lambda_exec_role_arn" {
+  type    = string
+  default = "arn:aws:iam::279249498881:role/quicklabs-fullstack-shared-lambda-exec"
+}
+
 # ---------- Database (PostgreSQL on EC2, from the prior lab) ----------
 
 variable "pg_host" {
@@ -44,6 +52,14 @@ variable "jwt_secret" {
 variable "jwt_expire_minutes" {
   type    = number
   default = 60
+}
+
+# Comma-separated usernames granted admin permissions in the app (edit or
+# delete any notice, pin/unpin any notice). Leave blank to disable admin
+# access entirely.
+variable "admin_usernames" {
+  type    = string
+  default = ""
 }
 
 # ---------- Optional: put Lambda in a VPC to reach the EC2 DB privately ----------

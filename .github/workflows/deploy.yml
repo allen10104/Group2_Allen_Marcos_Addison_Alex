@@ -1,0 +1,69 @@
+name: Deploy Notice Board
+
+# Scoped with `paths:` so this only fires when the notice-board project
+# itself changes — this repo hosts multiple unrelated projects on the
+# same branch, and an unscoped trigger would redeploy this app on every
+# unrelated push.
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/deploy.yml'
+      - 'workshops/fullstack-aws/projects/Group4_Shehzeen_Santosh_Rayhaan_Ricky_Taran/notice-board/**'
+  workflow_dispatch: {}
+
+env:
+  PROJECT_DIR: workshops/fullstack-aws/projects/Group4_Shehzeen_Santosh_Rayhaan_Ricky_Taran/notice-board
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Build Lambda package
+        working-directory: ${{ env.PROJECT_DIR }}/backend
+        run: python build.py
+
+      - name: Deploy backend
+        working-directory: ${{ env.PROJECT_DIR }}/backend
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ secrets.LAMBDA_FUNCTION_NAME }}" \
+            --zip-file fileb://lambda.zip
+
+      - name: Install frontend dependencies
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        run: npm install
+
+      - name: Build frontend
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+        run: npm run build
+
+      - name: Deploy frontend
+        working-directory: ${{ env.PROJECT_DIR }}/frontend
+        run: aws s3 sync dist/ "s3://${{ secrets.S3_BUCKET }}/" --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.CF_DISTRIBUTION_ID }}" \
+            --paths "/*"

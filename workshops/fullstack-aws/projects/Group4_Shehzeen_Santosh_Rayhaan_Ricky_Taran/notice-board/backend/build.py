@@ -1,7 +1,7 @@
 """
 Builds backend/lambda.zip: installs requirements for the Lambda's
 target platform (manylinux x86_64 / Python 3.12) and bundles them
-with lambda_function.py.
+with the application code (app.py plus the notice_board package).
 
 Run with: python build.py
 """
@@ -44,6 +44,11 @@ def main():
     )
 
     shutil.copy(os.path.join(ROOT, "app.py"), BUILD_DIR)
+    shutil.copytree(
+        os.path.join(ROOT, "notice_board"),
+        os.path.join(BUILD_DIR, "notice_board"),
+        ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+    )
 
     if os.path.exists(ZIP_PATH):
         os.remove(ZIP_PATH)

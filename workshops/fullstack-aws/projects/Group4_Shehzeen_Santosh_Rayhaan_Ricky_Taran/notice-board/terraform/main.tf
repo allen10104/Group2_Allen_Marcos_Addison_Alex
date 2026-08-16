@@ -89,33 +89,13 @@ resource "aws_s3_bucket_policy" "frontend" {
 # Lambda — Python backend
 # =====================================================================
 
-resource "aws_iam_role" "lambda_exec" {
-  name = "${var.name_prefix}-notice-board-lambda-role"
-
-  assume_role_policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Action    = "sts:AssumeRole"
-      Effect    = "Allow"
-      Principal = { Service = "lambda.amazonaws.com" }
-    }]
-  })
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_basic" {
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}
-
-resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
-  count      = length(var.lambda_vpc_subnet_ids) > 0 ? 1 : 0
-  role       = aws_iam_role.lambda_exec.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
-}
+# This account's students can't create IAM roles (iam:CreateRole is denied),
+# so every Lambda in this shared training account reuses one pre-provisioned
+# execution role instead of creating its own. See var.lambda_exec_role_arn.
 
 resource "aws_lambda_function" "backend" {
   function_name    = "${var.name_prefix}-notice-board-api"
-  role             = aws_iam_role.lambda_exec.arn
+  role             = var.lambda_exec_role_arn
   handler          = "app.handler"
   runtime          = "python3.12"
   timeout          = 10
@@ -131,6 +111,7 @@ resource "aws_lambda_function" "backend" {
       PG_PASSWORD        = var.pg_password
       JWT_SECRET         = var.jwt_secret
       JWT_EXPIRE_MINUTES = tostring(var.jwt_expire_minutes)
+      ADMIN_USERNAMES    = var.admin_usernames
     }
   }
 
@@ -153,8 +134,8 @@ resource "aws_apigatewayv2_api" "this" {
 
   cors_configuration {
     allow_origins = ["*"]
-    allow_methods = ["GET", "POST", "DELETE", "OPTIONS"]
-    allow_headers = ["Content-Type"]
+    allow_methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+    allow_headers = ["Content-Type", "Authorization"]
   }
 }
 
