@@ -1,0 +1,17 @@
+/* Basic styling shared across the entire application */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #222;
+}
+
+button,
+input,
+textarea {
+  font-family: inherit;
+}
