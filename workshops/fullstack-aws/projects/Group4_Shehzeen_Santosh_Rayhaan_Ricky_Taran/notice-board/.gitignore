@@ -1,0 +1,9 @@
+backend/_build/
+backend/lambda.zip
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/*.tfvars
+frontend/node_modules/
+frontend/dist/
