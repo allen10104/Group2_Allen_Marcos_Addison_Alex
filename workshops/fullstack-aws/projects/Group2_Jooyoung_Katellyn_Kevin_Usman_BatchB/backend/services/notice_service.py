@@ -1,8 +1,13 @@
 from datetime import date
 
+from dotenv import load_dotenv
+
 from backend.models.category import Category
 from backend.models.notice import Notice
 from backend.models.user import User
+from backend.repositories.postgres_notice_repository import PostgresNoticeRepository
+
+load_dotenv()
 
 
 class NoticeService:
@@ -72,6 +77,7 @@ class NoticeService:
         existing.date = notice_date
         existing.content = content.strip()
         existing.category = category
+        self.notice_repository.update(existing)
         return existing
 
     def delete_notice(self, notice_id: int, actor: User) -> None:
@@ -79,3 +85,7 @@ class NoticeService:
         if not actor.can_modify(existing):
             raise ValueError("You are not authorized to remove this notice")
         self.notice_repository.delete(notice_id)
+
+
+# Shared service for the process. Uses Postgres when DATABASE_URL is set.
+notice_service = NoticeService(PostgresNoticeRepository())

@@ -1,5 +1,5 @@
 class User:
-    def __init__(self, id, name, email, password, is_admin=False):
+    def __init__(self, id: int, name: str, email: str, password: str, is_admin: bool = False):
         self.id = id
         self.name = name
         self.email = email
@@ -8,6 +8,3 @@ class User:
 
     def can_modify(self, notice):
         return notice.author_id == self.id or self.is_admin
-
-    def my_notices(self, board):
-        return board.notices_by_author(self.id)

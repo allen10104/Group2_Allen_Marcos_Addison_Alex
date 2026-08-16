@@ -25,5 +25,11 @@ class InMemoryNoticeRepository:
     def add(self, notice: Notice) -> None:
         self._notices.append(notice)
 
+    def update(self, notice: Notice) -> None:
+        # In-memory notices are mutated in place; nothing else to write.
+        existing = self.get(notice.id)
+        if existing is None:
+            raise ValueError("Notice not found")
+
     def delete(self, notice_id: int) -> None:
         self._notices = [notice for notice in self._notices if notice.id != notice_id]
