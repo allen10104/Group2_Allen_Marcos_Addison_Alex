@@ -1,295 +1,130 @@
-# Notice Board
+# Notice Board — Shehzeen Syed
 
-A full-stack notice board: post short messages to a shared board, edit or
-delete your own, and — if you're an admin — pin the important ones to the
-top and moderate anyone's post. The UI renders the board as an actual
-corkboard, with each notice drawn as a sticky note.
+This is my submission for the Notice Board deployment assignment. Below I've
+explained what the app does, what I built on top of the base assignment, what
+I used to deploy it, and how you can test it live.
 
-This document describes what the application actually does and how it's
-put together. For the assignment brief itself (the AWS deployment tiers
-this project is graded against), see [ASSIGNMENT.md](./ASSIGNMENT.md).
+## Try it live
 
----
+**App:** https://dn9tfs5rsbz2.cloudfront.net
 
-## What was built
-
-The assignment ships with a working app and asks students to focus only on
-deployment (Tiers 1–4 in `ASSIGNMENT.md`). On top of that baseline, this
-submission also extended the application itself:
-
-**Core (as provided by the assignment):**
-- Register / log in with a username and password, get back a JWT
-- Post a notice while logged in
-- View all notices, publicly, without logging in
-- Delete a notice you posted
-
-**Added on top of the baseline:**
-- **Email at registration** — sign-up now collects and validates an email
-  address (server-side, via Pydantic's `EmailStr`) alongside the username
-  and password
-- **Edit your own notices** — a notice can be corrected after posting
-  instead of only delete-and-repost; edited notices are marked "(edited)"
-  with a timestamp
-- **Admin role** — usernames listed in the `ADMIN_USERNAMES` environment
-  variable get elevated permissions: they can edit or delete *any* notice,
-  not just their own
-- **Pin as important** — admins can pin a notice; pinned notices always
-  sort to the top of the board, ahead of newer posts, until unpinned
-- **Corkboard UI redesign** — the board is a textured cork background;
-  each notice is a rotated, colored sticky note with a pinned tack or
-  tape strip, a handwritten font, and a torn-corner delete control;
-  pinned notices get a red tack, a glowing highlight, and an "Important"
-  ribbon so they don't blend in with the rest of the board
-
----
-
-## Architecture
+**Admin login** (so you can test the admin-only features — pinning notices and
+deleting/editing anyone's post, not just your own):
 
 ```
-                         ┌─────────────────────────┐
-                         │      React Frontend      │
-                         │   (Vite, plain fetch)    │
-                         └────────────┬─────────────┘
-                                      │ HTTPS / JSON
-                                      ▼
-                         ┌─────────────────────────┐
-                         │       FastAPI app         │
-                         │  (app.py + notice_board)  │
-                         │                            │
-                         │  local dev: uvicorn        │
-                         │  prod: Lambda via Mangum,  │
-                         │  fronted by API Gateway    │
-                         └────────────┬─────────────┘
-                                      │ psycopg2
-                                      ▼
-                         ┌─────────────────────────┐
-                         │       PostgreSQL           │
-                         │  local dev: Windows service │
-                         │  prod: EC2 instance          │
-                         └─────────────────────────┘
+Username: admin
+Password: hunter22222
 ```
 
-The same FastAPI code runs two ways without any changes: directly under
-`uvicorn` for local development, or wrapped by `Mangum` as a Lambda
-handler in production (`handler = Mangum(app, lifespan="off")` in
-`backend/app.py`). API Gateway is configured to proxy every path straight
-through to the Lambda, so FastAPI's own router handles all path matching
-in both environments.
+You can also just click "Sign up" and create your own regular account to test
+posting, editing, and deleting your own notices.
 
----
+## What the app does
 
-## Data model
+It's a shared corkboard: anyone can view the notices without logging in, but
+you need an account to post one. Notices show up as sticky notes pinned to a
+corkboard background, each with a slightly different color and tilt so they
+don't look perfectly aligned — like an actual board. You can edit or delete
+your own notices any time. Admin accounts can additionally pin a notice as
+"important" (it jumps to the top and stays there, with a red tack and a
+ribbon so it stands out), and can edit or delete anyone's notice, not just
+their own.
 
-Two tables, created automatically on first request (`ensure_tables()` in
-`backend/notice_board/database.py`) and migrated in place with
-`ALTER TABLE ... ADD COLUMN IF NOT EXISTS` if columns were added after a
-database already existed:
+## What I built beyond the assignment
 
-**`users`**
+I extended the app with a few features I thought made it feel more like a real product:
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | `SERIAL PRIMARY KEY` | |
-| `username` | `TEXT UNIQUE NOT NULL` | login identifier |
-| `email` | `TEXT` | collected at registration, not currently unique/verified |
-| `password_hash` | `TEXT NOT NULL` | bcrypt hash, never the raw password |
-| `created_at` | `TIMESTAMPTZ NOT NULL DEFAULT now()` | |
+- **Email at sign-up** — registration now asks for and validates an email
+  address, not just a username and password
+- **Editing your own notices** — instead of only being able to delete and
+  repost, you can now correct a notice after posting it (it gets marked
+  "(edited)" with a timestamp)
+- **Admin accounts** — some usernames can be granted admin rights, letting
+  them moderate the board (edit/delete anyone's notice)
+- **Pin as important** — admins can pin a notice so it always stays at the
+  top of the board, even as newer notices get posted
+- **A full corkboard redesign** — I rebuilt the whole UI to actually look
+  like a corkboard with sticky notes, tacks/tape, a handwritten font, and a
+  torn-corner delete button, instead of a plain list
 
-**`notices`**
+## What I used
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | `SERIAL PRIMARY KEY` | |
-| `message` | `TEXT NOT NULL` | |
-| `author` | `TEXT` | username of the poster |
-| `pinned` | `BOOLEAN NOT NULL DEFAULT FALSE` | admin-controlled "important" flag |
-| `created_at` | `TIMESTAMPTZ NOT NULL DEFAULT now()` | |
-| `updated_at` | `TIMESTAMPTZ` | set on edit, `NULL` if never edited |
+- **Backend:** Python, FastAPI, running on AWS Lambda through Mangum, sitting
+  behind an API Gateway HTTP API
+- **Database:** PostgreSQL — I used [Neon](https://neon.tech) (a managed,
+  serverless Postgres host) instead of an EC2 instance. More on why below.
+- **Frontend:** React + Vite, hosted as a static site on S3
+- **CDN:** CloudFront in front of the S3 bucket, so the app is served over
+  HTTPS with the S3 bucket itself locked down to CloudFront-only access
+- **Infrastructure:** Terraform for everything in AWS
+- **CI/CD:** GitHub Actions — every push to `main` that touches this project
+  automatically rebuilds the Lambda, redeploys it, rebuilds the frontend,
+  re-uploads it to S3, and invalidates the CloudFront cache
 
----
+## One deviation worth explaining: Postgres on Neon, not EC2
 
-## Authentication & permissions
+The assignment's prerequisite is a PostgreSQL instance already running on
+EC2 from an earlier lab. I didn't have one set up for this project, and this
+training AWS account doesn't allow students to create IAM roles or several
+other account-wide resources — I ran into `AccessDenied` errors trying to
+provision things the "normal" way. Rather than get stuck, I used Neon, a
+free managed Postgres provider, which the Lambda reaches over the internet
+exactly the same way it would reach an EC2-hosted database — same
+`psycopg2` connection code, same environment variables (`PG_HOST`, `PG_DB`,
+etc.), no code differences at all. Functionally it satisfies the assignment's
+actual requirement ("notices save to PostgreSQL and appear on the page"),
+just hosted somewhere else.
 
-Login and registration both return a JWT (`HS256`, signed with the
-`JWT_SECRET` env var, default 60-minute expiry via `JWT_EXPIRE_MINUTES`).
-The token payload carries everything a protected route needs to know
-about the caller, so no extra database lookup is required per request:
+## Deployment status — all three core tiers are done
 
-```json
-{
-  "sub": "alice",
-  "is_admin": false,
-  "iat": 1699999999,
-  "exp": 1700003599
-}
-```
+- ✅ **Tier 1 (manual deploy):** S3 static site, Lambda, API Gateway, all
+  resources prefixed `student-shehzeen-syed-`
+- ✅ **Tier 2 (GitHub Actions):** pushing to `main` auto-deploys both the
+  backend and frontend with no manual AWS CLI commands — see
+  `.github/workflows/deploy-shehzeen-syed-notice-board.yml` at the repo root
+- ✅ **Tier 3 (CloudFront):** the app is served over HTTPS via CloudFront,
+  the S3 bucket is no longer publicly reachable directly, and every deploy
+  automatically invalidates the CloudFront cache
+- ⬜ Tier 4 (observability) — not attempted, this was the optional bonus tier
 
-`is_admin` is computed once, at the moment the token is issued, by
-checking the username against the comma-separated `ADMIN_USERNAMES`
-environment variable (`backend/notice_board/config.py`). There is no
-`is_admin` column in the database — admin status is a deployment-time
-configuration, not stored per-user state. To make a user an admin, add
-their username to `ADMIN_USERNAMES` and have them log in again (an
-already-issued token won't retroactively gain the claim).
+## How to test the full thing
 
-Permission rules, enforced in `backend/notice_board/routers/notices.py`:
+1. Open the live URL above
+2. You should see existing notices on the board already
+3. Log in as `admin` (password above)
+4. Post a notice — it should appear instantly
+5. Pin it — it should jump to the top with a red tack and "Important" ribbon
+6. Post a second notice as admin, or log out and sign up as a new user and
+   post one — confirm the pinned one still stays on top
+7. Try editing and deleting your own notice
+8. Log in as a non-admin account and confirm you *can't* pin notices or
+   delete/edit ones that aren't yours (only your own)
 
-| Action | Who can do it |
-|---|---|
-| View notices | anyone, no login required |
-| Post a notice | any logged-in user |
-| Edit a notice | the note's author, or an admin |
-| Delete a notice | the note's author, or an admin |
-| Pin / unpin a notice | admins only |
-
----
-
-## Notice lifecycle & ordering
-
-`GET /notices` sorts with `ORDER BY pinned DESC, created_at DESC` — every
-pinned note sorts ahead of every unpinned note, and within each group the
-newest comes first. This is done in the database query, not client-side,
-so pin order is consistent no matter which client reads it. The frontend
-mirrors the same sort locally after a pin/unpin action so the moved note
-doesn't wait on a full page reload to jump into place.
-
----
-
-## Project structure
+## Project structure, if you want to look at the code
 
 ```
 notice-board/
 ├── backend/
-│   ├── app.py                        # FastAPI app assembly + Mangum Lambda handler (entrypoint)
-│   ├── build.py                      # Packages app.py + notice_board/ into lambda.zip
-│   ├── requirements.txt
-│   └── notice_board/
-│       ├── config.py                 # Env var configuration (JWT_SECRET, ADMIN_USERNAMES, ...)
-│       ├── database.py               # get_connection() + ensure_tables() (schema + migrations)
-│       ├── security.py               # Password hashing, JWT issue/verify, get_current_user dependency
-│       ├── schemas.py                # Pydantic request/response models
-│       └── routers/
-│           ├── auth.py               # POST /auth/register, POST /auth/login
-│           └── notices.py            # /notices CRUD + /notices/{id}/pin
-│
+│   ├── app.py                 # FastAPI app + Lambda entrypoint
+│   ├── build.py                # Packages everything into lambda.zip
+│   └── notice_board/           # Actual application code
+│       ├── config.py            # Reads env vars
+│       ├── database.py          # DB connection + table creation
+│       ├── security.py          # Password hashing, JWT auth
+│       ├── schemas.py           # Request/response models
+│       └── routers/             # auth.py and notices.py — the actual endpoints
 ├── frontend/
 │   └── src/
-│       ├── main.jsx                  # React entrypoint
-│       ├── App.jsx                   # Top-level state & data flow (auth, notice list, edit state)
-│       ├── api.js                    # All backend HTTP calls; decodes JWT client-side for display
-│       ├── index.css                 # Corkboard background + sticky-note styling
-│       ├── components/
-│       │   ├── LoginForm.jsx         # Combined login/register screen
-│       │   ├── Composer.jsx          # "Write a notice" sticky-note form
-│       │   └── NoteCard.jsx          # A single sticky note: view/edit modes + actions
-│       └── utils/
-│           └── noteVisuals.js        # Deterministic per-note color/rotation/fastener
-│
-└── terraform/                        # AWS infrastructure (Tiers 1–4, see ASSIGNMENT.md)
+│       ├── App.jsx              # Main app state/logic
+│       ├── api.js               # All calls to the backend
+│       └── components/          # LoginForm, Composer, NoteCard
+└── terraform/                  # All the AWS infrastructure
 ```
 
----
+## A couple of honest limitations
 
-## API reference
-
-All request/response bodies are JSON. Protected routes require
-`Authorization: Bearer <token>`.
-
-| Method | Path | Auth | Body | Description |
-|---|---|---|---|---|
-| POST | `/auth/register` | — | `{username, email, password}` | Create an account, returns `{access_token, token_type}` |
-| POST | `/auth/login` | — | `{username, password}` | Returns `{access_token, token_type}` |
-| GET | `/notices` | — | — | List all notices, pinned first, newest first |
-| POST | `/notices` | required | `{message}` | Create a notice as the caller |
-| PUT | `/notices/{id}` | required | `{message}` | Edit a notice (author or admin only) |
-| PATCH | `/notices/{id}/pin` | required | `{pinned}` | Pin/unpin a notice (admin only) |
-| DELETE | `/notices/{id}` | required | — | Delete a notice (author or admin only) |
-
-A notice object looks like:
-
-```json
-{
-  "id": 5,
-  "message": "hello board",
-  "author": "alice",
-  "pinned": false,
-  "created_at": "2026-08-16T12:02:10.782878-04:00",
-  "updated_at": null
-}
-```
-
----
-
-## Running locally
-
-Requires PostgreSQL reachable from your machine (a local install works
-fine for development — see `BUILD_GUIDE.md` for a from-scratch walkthrough).
-
-**Backend:**
-
-```powershell
-cd notice-board/backend
-.\venv\Scripts\Activate.ps1
-
-$env:PG_HOST="localhost"
-$env:PG_PORT="5432"
-$env:PG_DB="notice_board"
-$env:PG_USER="nb_user"
-$env:PG_PASSWORD="localdevpass"
-$env:JWT_SECRET="dev-only-secret-change-me"
-$env:ADMIN_USERNAMES="admin"      # optional: comma-separated list of admin usernames
-
-uvicorn app:app --reload --port 8000
-```
-
-**Frontend:**
-
-```bash
-cd notice-board/frontend
-npm install
-npm run dev
-```
-
-Set `frontend/.env.local` to point at the backend:
-
-```
-VITE_API_URL=http://localhost:8000
-```
-
-Then open `http://localhost:5173`.
-
----
-
-## Deployment status
-
-This project has **not yet been deployed to AWS**. Everything above has
-been built and verified running locally only. To deploy per
-`ASSIGNMENT.md`'s Tier 1:
-
-1. Provision an EC2 instance running PostgreSQL (the assignment's
-   prerequisite lab) — not yet done for this project.
-2. Add `admin_usernames` as a Terraform variable and pass it through as
-   a Lambda environment variable in `terraform/main.tf`, the same way
-   `jwt_secret` is wired today — the admin/pin feature depends on it and
-   it is currently only set locally, not in Terraform.
-3. Run `python build.py` to produce `backend/lambda.zip` (this now
-   bundles the `notice_board` package alongside `app.py` — see
-   `backend/build.py`).
-4. `terraform init && terraform apply`.
-5. Build the frontend with `VITE_API_URL` set to the deployed API
-   Gateway URL, and upload it to the S3 bucket Terraform creates.
-
----
-
-## Known limitations
-
-- Email addresses are collected and validated for format, but **not**
-  checked for uniqueness or verified via a confirmation email.
-- Admin status lives in an env var, not the database — revoking or
-  granting admin requires a redeploy (or restart, locally) and affects
-  only tokens issued afterward.
-- Local Postgres, when set up via the winget installer without admin
-  rights to restart the Windows service, may be running with `trust`
-  authentication (no password enforced) rather than `scram-sha-256` —
-  fine for a local-only dev database, but worth knowing if you go
-  looking for it in `pg_hba.conf`.
+- Email addresses are validated for format but not checked for uniqueness —
+  you could register two accounts with the same email
+- Admin access is controlled by an environment variable
+  (`ADMIN_USERNAMES`), not a database column, so granting/revoking admin
+  requires a redeploy
