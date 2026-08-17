@@ -2,6 +2,7 @@ node_modules/
 dist/
 *.zip
 backend/_build/
+backend/_local_uploads/
 .terraform/
 .terraform.lock.hcl
 terraform.tfstate
@@ -10,4 +11,5 @@ terraform.tfvars
 .env
 __pycache__/
 venv/
+*.tsbuildinfo
 
