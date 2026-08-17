@@ -149,8 +149,8 @@ export default function App() {
       <header className="header">
         <h1>Notice Board</h1>
         <p>
-          A shared corkboard for updates, reminders, and shoutouts — pin what matters, edit or take down your own
-          notices anytime.
+          Your team's corkboard for updates, reminders, and shoutouts — pin what matters most, and edit or take
+          down your own notices anytime.
         </p>
       </header>
 
