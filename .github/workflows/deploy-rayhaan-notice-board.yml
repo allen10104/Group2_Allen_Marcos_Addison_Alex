@@ -68,8 +68,8 @@ jobs:
           aws s3 sync ${{ env.PROJECT_DIR }}/frontend/dist "s3://${{ secrets.S3_BUCKET }}" --delete
 
       # Tier 3: uncomment once you've added the CLOUDFRONT_DISTRIBUTION_ID secret
-      # - name: Invalidate CloudFront cache
-      #   run: |
-      #     aws cloudfront create-invalidation \
-      #       --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
-      #       --paths "/*"
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}" \
+            --paths "/*"

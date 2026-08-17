@@ -133,32 +133,11 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
   }
 }
 
-resource "aws_s3_bucket_public_access_block" "frontend" {
-  bucket = aws_s3_bucket.frontend.id
-
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
-}
-
-resource "aws_s3_bucket_policy" "frontend_public_read" {
-  bucket = aws_s3_bucket.frontend.id
-  depends_on = [aws_s3_bucket_public_access_block.frontend]
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Sid       = "PublicReadGetObject"
-        Effect    = "Allow"
-        Principal = "*"
-        Action    = "s3:GetObject"
-        Resource  = "${aws_s3_bucket.frontend.arn}/*"
-      }
-    ]
-  })
-}
+# Tier 3: the public access block + public-read bucket policy that used to
+# live here have been replaced by the CloudFront-only versions in
+# cloudfront.tf (aws_s3_bucket_public_access_block.frontend_private and
+# aws_s3_bucket_policy.frontend_cloudfront_only) - the bucket is now fully
+# private, reachable only through CloudFront via Origin Access Control.
 
 # ---------------------------------------------------------------------------
 # IAM role for Lambda

@@ -1,14 +1,6 @@
 # ---------------------------------------------------------------------------
 # TIER 3 - CloudFront + Origin Access Control
 #
-# How to activate this file:
-#   1. In ../main.tf, DELETE (or comment out) these two resources:
-#        - resource "aws_s3_bucket_public_access_block" "frontend"
-#        - resource "aws_s3_bucket_policy" "frontend_public_read"
-#      They are replaced by the private/CloudFront-only versions below.
-#   2. Move this file up a directory:  mv terraform/tier3/cloudfront.tf terraform/cloudfront.tf
-#   3. terraform init (no new providers, but harmless) && terraform apply
-#
 # Why: an Origin Access Control only works against the S3 bucket's REST API
 # endpoint (bucket_regional_domain_name), not the "static website hosting"
 # endpoint - so once CloudFront is in front, the bucket goes fully private
