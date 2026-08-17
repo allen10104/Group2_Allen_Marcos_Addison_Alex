@@ -13,15 +13,11 @@
 
 ## Project Overview
 
-QMMO Notice Board is a full-stack web application for posting and
-viewing notices in one central location.
+QMMO Notice Board is a full-stack web application that allows users to
+post and view notices in one central location.
 
-The application allows users to create notices, view existing notices,
-delete notices, assign a priority level to each notice, and filter
-notices based on priority.
-
-The project was implemented independently by Omar Ali as part of the
-Group 3 project.
+Users can create notices, view existing notices, delete notices, assign
+a priority level to each notice, and filter notices based on priority.
 
 The application uses React for the frontend, FastAPI for the backend,
 MongoDB Atlas for the database, and AWS services for deployment.
@@ -192,7 +188,7 @@ Example request:
 
 ``` json
 {
-  "name": "Omar",
+  "name": "John",
   "message": "Team meeting at 4 PM",
   "priority": "Urgent"
 }
@@ -343,13 +339,12 @@ communicate with the backend API.
 
 ## Development and Git Workflow
 
-The application implementation was completed independently by Omar Ali
-within a fork of the BeCloudReady workshops repository.
-
 The project was developed and tested locally before the frontend and
-backend were deployed to AWS. Changes were committed and pushed to the
-`master` branch of the fork throughout development.
+backend were deployed to AWS.
 
-After final testing and documentation are complete, the project is
-submitted through a pull request from the fork's `master` branch to the
-upstream BeCloudReady workshops repository.
+Changes were committed and pushed to the `master` branch of the fork
+throughout development.
+
+After final testing and documentation were completed, the project was
+submitted through a pull request to the upstream BeCloudReady workshops
+repository.
