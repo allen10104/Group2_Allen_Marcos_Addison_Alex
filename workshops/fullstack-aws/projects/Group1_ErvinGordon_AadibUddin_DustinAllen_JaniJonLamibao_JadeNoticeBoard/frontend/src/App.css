@@ -1,0 +1,47 @@
+/* Constrains and centers the whole page's content to a readable column width. */
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 1rem 3rem;
+}
+
+/* Lays the badge dot and title/tagline text out in a row. */
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.75rem 0 1.5rem;
+  border-bottom: 2px solid var(--color-accent);
+  margin-bottom: 1.5rem;
+}
+
+/* The small glowing accent-colored circle next to the title. */
+.app-header__badge {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  /* Faux "glow" effect: an oversized, tinted shadow with no blur/offset. */
+  box-shadow: 0 0 0 4px var(--color-accent-glow);
+  /* Prevents the flex row from squishing the circle when space is tight. */
+  flex-shrink: 0;
+}
+
+/* The "RED-E-LERT" heading text. */
+.app-header__text h1 {
+  font-size: 1.75rem;
+  text-transform: uppercase;
+  color: var(--color-text);
+}
+
+/* The "E" wrapped in <span> inside the title gets the accent color. */
+.app-header__text h1 span {
+  color: var(--color-accent);
+}
+
+/* The tagline paragraph under the title. */
+.app-header__text p {
+  margin: 0.15rem 0 0;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
