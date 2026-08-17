@@ -85,7 +85,7 @@ function App() {
   return (
     <div className="page">
       <header className="header">
-        <h1>Group 3 Notice Board</h1>
+        <h1>QMMO Notice Board</h1>
         <p>Share updates, reminders, and important announcements.</p>
       </header>
 

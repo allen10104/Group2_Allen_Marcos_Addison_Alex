@@ -5,26 +5,28 @@ from app.routers.notice_router import router as notice_router
 
 # Creates the main FastAPI application
 app = FastAPI(
-    title="Group 3 Notice Board API"
+    title="QMMO Notice Board API"
 )
 
-# Allows the local React frontend to communicate with the backend
+# Allows both the local React frontend and the deployed CloudFront
+# frontend to send requests to the backend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://d1qrvfuf1egg8d.cloudfront.net",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Adds all of the notice routes to the main application
+# Adds all of the notice endpoints to the main application
 app.include_router(notice_router)
 
 
-# Simple route used to make sure the backend is running
+# Simple route used to confirm that the backend is running
 @app.get("/")
 def root():
     return {
