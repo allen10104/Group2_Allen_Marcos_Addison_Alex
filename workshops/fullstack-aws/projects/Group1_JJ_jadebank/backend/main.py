@@ -1,104 +1,116 @@
-"""
-Entry point for data management system REST API (FastAPI).
+import os
 
-This file is responsible ONLY for:
-
-- creating the FastAPI app instance
-- wiring together the routers built by the controllers/ layer
-- app-level metadata and a health check
-"""
-
-from fastapi import FastAPI
+import psycopg
+from dotenv import load_dotenv
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-from controllers.customer_controller import router as customer_router
-from controllers.account_controller import router as account_router
-from controllers.transaction_controller import router as transaction_router
-from controllers.auth_controller import router as auth_router
-from controllers.branch_manager_controller import router as branch_manager_router
-from controllers.user_controller import router as user_router
+load_dotenv()
 
-from models.database import init_db
+app = FastAPI(title="Notice Board API")
 
 
-# Create the main FastAPI application and define its API metadata.
-server = FastAPI(
-    title="Bank Management System API",
-    description="RESTful API for managing customers, accounts, and transactions.",
-    version="1.0.0",
-)
+def get_connection():
+    return psycopg.connect(
+        host=os.getenv("PG_HOST"),
+        port=os.getenv("PG_PORT"),
+        dbname=os.getenv("PG_DATABASE"),
+        user=os.getenv("PG_USER"),
+        password=os.getenv("PG_PASSWORD"),
+    )
 
 
-# Allow the local frontend development server to communicate with the API.
-# CORS is required because the frontend and backend run on different origins.
-server.add_middleware(
+class NoticeCreate(BaseModel):
+    name: str
+    message: str
+
+
+app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=[
+        "http://localhost:5173",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-# Create the database tables when the application starts.
-# Existing tables are left unchanged.
-init_db()
+@app.get("/")
+def root():
+    return {"message": "Notice Board API is running"}
 
 
-# Register each controller's routes under its appropriate API prefix.
-# Controllers contain the endpoint logic while main.py only connects them
-# to the main FastAPI application.
-server.include_router(
-    customer_router,
-    prefix="/api/v1/customers",
-    tags=["Customers"]
-)
+@app.get("/notices")
+def get_notices():
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT id, name, message
+                FROM notices
+                ORDER BY id DESC
+                """
+            )
 
-server.include_router(
-    account_router,
-    prefix="/api/v1/accounts",
-    tags=["Accounts"]
-)
+            rows = cursor.fetchall()
 
-server.include_router(
-    transaction_router,
-    prefix="/api/v1/transactions",
-    tags=["Transactions"]
-)
-
-server.include_router(
-    auth_router,
-    prefix="/api/v1/auth",
-    tags=["Authentication"]
-)
-
-server.include_router(
-    branch_manager_router,
-    prefix="/api/v1/branch-managers",
-    tags=["Branch Managers"]
-)
-
-server.include_router(
-    user_router,
-    prefix="/api/v1/users",
-    tags=["Users"]
-)
+    return [
+        {
+            "id": row[0],
+            "name": row[1],
+            "message": row[2],
+        }
+        for row in rows
+    ]
 
 
-# Provide a simple health check endpoint to confirm that the API is running.
-@server.get("/", tags=["Health"])
-def health_check():
-    """Simple liveness check to confirm the API is up."""
-    return {"status": "ok", "service": "Bank Management System API"}
+@app.post("/notices")
+def create_notice(notice: NoticeCreate):
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                INSERT INTO notices (name, message)
+                VALUES (%s, %s)
+                RETURNING id, name, message
+                """,
+                (notice.name, notice.message),
+            )
+
+            row = cursor.fetchone()
+
+        connection.commit()
+
+    return {
+        "id": row[0],
+        "name": row[1],
+        "message": row[2],
+    }
 
 
-# Start the Uvicorn development server when this file is run directly.
-if __name__ == "__main__":
-    import uvicorn
+@app.delete("/notices/{notice_id}")
+def delete_notice(notice_id: int):
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM notices
+                WHERE id = %s
+                RETURNING id
+                """,
+                (notice_id,),
+            )
 
-    uvicorn.run(
-        "main:server",
-        host="0.0.0.0",
-        port=8000,
-        reload=True
-    )
+            deleted = cursor.fetchone()
+
+        connection.commit()
+
+    if deleted is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Notice not found",
+        )
+
+    return {"message": "Notice deleted successfully"}

@@ -61,8 +61,8 @@ function App() {
       const newNotice = await response.json();
 
       setNotices((currentNotices) => [
-        ...currentNotices,
         newNotice,
+        ...currentNotices,
       ]);
     } catch (error) {
       console.error(error);
