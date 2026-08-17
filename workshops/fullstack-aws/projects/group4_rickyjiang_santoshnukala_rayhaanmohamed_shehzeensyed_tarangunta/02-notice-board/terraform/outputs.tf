@@ -19,3 +19,13 @@ output "lambda_function_name" {
 }
 
 
+
+output "cloudfront_url" {
+  description = "HTTPS URL for the app - this is the one you submit"
+  value       = "https://${aws_cloudfront_distribution.app.domain_name}"
+}
+
+output "cloudfront_distribution_id" {
+  description = "Distribution ID - GitHub Secret CF_DISTRIBUTION_ID"
+  value       = aws_cloudfront_distribution.app.id
+}

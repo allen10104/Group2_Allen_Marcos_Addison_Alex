@@ -202,7 +202,21 @@ jobs:
             --cache-control "no-cache, no-store, must-revalidate" \
             --content-type "text/html"
 
-      # TIER 3 adds a CloudFront invalidation step right here.
+      - name: Invalidate CloudFront cache
+        run: |
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' --output text)
+          echo "Created invalidation $INVALIDATION_ID"
+
+          # Block until the edges have actually purged. Without this the workflow goes
+          # green while users are still served the old bundle for another minute - which
+          # looks exactly like "my deploy did not work".
+          aws cloudfront wait invalidation-completed \
+            --distribution-id ${{ secrets.CF_DISTRIBUTION_ID }} \
+            --id "$INVALIDATION_ID"
+          echo "Invalidation complete"
 
       - name: Summary
         run: |

@@ -52,34 +52,128 @@ resource "aws_s3_bucket_website_configuration" "frontend" {
   }
 }
 
-# By default S3 blocks all public access. Tier 1 explicitly wants a public website, so
-# we lift the block. TIER 3 REVERSES ALL FOUR OF THESE and puts CloudFront in front.
+# TIER 3: all four flip to true. The bucket is now private; ONLY CloudFront's signed
+# requests can read it. Direct S3 URLs return 403 - that is the acceptance criterion,
+# not a bug.
 resource "aws_s3_bucket_public_access_block" "frontend" {
   bucket = aws_s3_bucket.frontend.id
 
-  block_public_acls       = false
-  block_public_policy     = false
-  ignore_public_acls      = false
-  restrict_public_buckets = false
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
-resource "aws_s3_bucket_policy" "frontend_public_read" {
+resource "aws_s3_bucket_policy" "frontend_cloudfront_only" {
   bucket = aws_s3_bucket.frontend.id
 
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Sid       = "PublicReadGetObject"
-      Effect    = "Allow"
-      Principal = "*"            # anyone on the internet
-      Action    = "s3:GetObject" # READ ONLY - never s3:PutObject
+      Sid    = "AllowCloudFrontServicePrincipalReadOnly"
+      Effect = "Allow"
+      # The SERVICE principal, not "*". Every CloudFront distribution in the world
+      # shares this principal...
+      Principal = { Service = "cloudfront.amazonaws.com" }
+      Action    = "s3:GetObject"
       Resource  = "${aws_s3_bucket.frontend.arn}/*"
+      Condition = {
+        StringEquals = {
+          # ...so THIS condition is what actually secures it. Only requests signed by
+          # your specific distribution are allowed. Drop the condition and you have
+          # granted read access to anyone who can create a CloudFront distribution -
+          # i.e. everyone. The condition IS the security control.
+          "AWS:SourceArn" = aws_cloudfront_distribution.app.arn
+        }
+      }
     }]
   })
 
-  # Applying a public policy before the public access block is lifted fails with
-  # AccessDenied. Terraform cannot infer this ordering itself.
   depends_on = [aws_s3_bucket_public_access_block.frontend]
+}
+
+# ---------------------------------------------------------------------------
+# CloudFront
+# ---------------------------------------------------------------------------
+
+resource "aws_cloudfront_origin_access_control" "oac" {
+  name                              = "${local.name}-oac"
+  description                       = "OAC for the notice board frontend bucket"
+  origin_access_control_origin_type = "s3"
+  # "always" = sign every request to the origin. "never" would defeat the point;
+  # "no-override" only signs when the viewer request was already signed.
+  signing_behavior = "always"
+  signing_protocol = "sigv4"
+}
+
+resource "aws_cloudfront_distribution" "app" {
+  enabled = true
+  comment = "${local.name} frontend"
+  # Serves index.html when someone requests the bare domain.
+  default_root_object = "index.html"
+  # PriceClass_100 = North America + Europe edges. Cheapest tier, plenty for a workshop.
+  price_class = "PriceClass_100"
+
+  origin {
+    # bucket_regional_domain_name, NOT website_endpoint.
+    #
+    # The S3 *website* endpoint is plain HTTP and does NOT support SigV4 request
+    # signing - pointing OAC at it produces a permanent 403 that looks exactly like a
+    # bucket-policy problem. You must use the REST endpoint. This is the single most
+    # common Tier 3 mistake and it costs people an hour.
+    domain_name              = aws_s3_bucket.frontend.bucket_regional_domain_name
+    origin_id                = "s3-${aws_s3_bucket.frontend.id}"
+    origin_access_control_id = aws_cloudfront_origin_access_control.oac.id
+  }
+
+  default_cache_behavior {
+    target_origin_id = "s3-${aws_s3_bucket.frontend.id}"
+    # Silently upgrade http:// to https://. The assignment asks for HTTPS; this
+    # guarantees it rather than hoping users type it.
+    viewer_protocol_policy = "redirect-to-https"
+
+    allowed_methods = ["GET", "HEAD", "OPTIONS"]
+    cached_methods  = ["GET", "HEAD"]
+    compress        = true # gzip/brotli at the edge, free
+
+    # AWS-managed "CachingOptimized" policy: respects the Cache-Control headers you set
+    # at upload time, so the immutable-assets / no-cache-index.html split keeps working
+    # exactly as designed. Using a managed policy ID is the current approach; the old
+    # forwarded_values block is deprecated.
+    cache_policy_id = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  }
+
+  # --- SPA routing ---
+  # A PRIVATE bucket returns 403 (not 404) for a missing key, because "does this object
+  # exist?" is itself information it will not disclose. So BOTH codes must map back to
+  # the app shell, or a refresh on any sub-path breaks.
+  custom_error_response {
+    error_code            = 403
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
+  custom_error_response {
+    error_code            = 404
+    response_code         = 200
+    response_page_path    = "/index.html"
+    error_caching_min_ttl = 0
+  }
+
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+
+  viewer_certificate {
+    # The free *.cloudfront.net certificate. A custom domain would need an ACM cert in
+    # us-east-1 plus DNS validation - out of scope.
+    cloudfront_default_certificate = true
+  }
+
+  tags = local.tags
 }
 
 # ---------------------------------------------------------------------------
@@ -128,10 +222,14 @@ resource "aws_lambda_function" "api" {
       JWT_SECRET             = var.jwt_secret
       JWT_EXPIRATION_MINUTES = "60"
 
-      # The S3 website endpoint, so the browser's cross-origin calls are permitted.
-      # Tier 3 appends the CloudFront domain here - one line, no code change, because
-      # config.py reads this at startup.
-      CORS_ALLOWED_ORIGINS = "http://${aws_s3_bucket_website_configuration.frontend.website_endpoint}"
+      # Both origins: the CloudFront domain (the real one now) and the S3 website
+      # endpoint (kept only so you can prove the direct-S3 path is dead without a CORS
+      # error muddying the test). This is why config.py reads origins from an env var -
+      # adding a domain is a terraform apply, not a code change and redeploy.
+      CORS_ALLOWED_ORIGINS = join(",", [
+        "https://${aws_cloudfront_distribution.app.domain_name}",
+        "http://${aws_s3_bucket_website_configuration.frontend.website_endpoint}"
+      ])
     }
   }
 
