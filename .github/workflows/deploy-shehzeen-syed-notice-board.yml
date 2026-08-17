@@ -1,19 +1,19 @@
-name: Deploy Notice Board
+name: Deploy Notice Board (shehzeen-syed)
 
-# Scoped with `paths:` so this only fires when the notice-board project
-# itself changes — this repo hosts multiple unrelated projects on the
-# same branch, and an unscoped trigger would redeploy this app on every
+# Scoped with `paths:` so this only fires when this specific submission
+# changes — this repo hosts every student's submission on the same
+# branch, and an unscoped trigger would redeploy this app on every
 # unrelated push.
 on:
   push:
     branches: [main]
     paths:
-      - '.github/workflows/deploy.yml'
-      - 'workshops/fullstack-aws/projects/Group4_Shehzeen_Santosh_Rayhaan_Ricky_Taran/notice-board/**'
+      - '.github/workflows/deploy-shehzeen-syed-notice-board.yml'
+      - 'workshops/fullstack-aws/projects/submission/shehzeen-syed/notice-board/**'
   workflow_dispatch: {}
 
 env:
-  PROJECT_DIR: workshops/fullstack-aws/projects/Group4_Shehzeen_Santosh_Rayhaan_Ricky_Taran/notice-board
+  PROJECT_DIR: workshops/fullstack-aws/projects/submission/shehzeen-syed/notice-board
 
 jobs:
   deploy:
