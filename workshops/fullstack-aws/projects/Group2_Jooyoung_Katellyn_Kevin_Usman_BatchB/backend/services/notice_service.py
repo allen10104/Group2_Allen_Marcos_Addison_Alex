@@ -1,11 +1,11 @@
 from datetime import date
+import os
 
 from dotenv import load_dotenv
 
 from backend.models.category import Category
 from backend.models.notice import Notice
 from backend.models.user import User
-from backend.repositories.postgres_notice_repository import PostgresNoticeRepository
 
 load_dotenv()
 
@@ -87,5 +87,17 @@ class NoticeService:
         self.notice_repository.delete(notice_id)
 
 
-# Shared service for the process. Uses Postgres when DATABASE_URL is set.
-notice_service = NoticeService(PostgresNoticeRepository())
+def create_default_notice_service() -> NoticeService:
+    """Postgres by default; set NOTICE_BOARD_REPO=memory for unit tests."""
+    if os.getenv("NOTICE_BOARD_REPO", "postgres").lower() == "memory":
+        from backend.repositories.notice_repository import InMemoryNoticeRepository
+
+        return NoticeService(InMemoryNoticeRepository())
+
+    from backend.repositories.postgres_notice_repository import PostgresNoticeRepository
+
+    return NoticeService(PostgresNoticeRepository())
+
+
+# Shared service for the process.
+notice_service = create_default_notice_service()

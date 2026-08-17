@@ -1,0 +1,17 @@
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at top, rgba(255, 244, 220, 0.45), transparent 42%),
+    #d8c3a5;
+  color: #2a1d12;
+}
+
+.layout__main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: clamp(1rem, 2.5vw, 1.75rem) clamp(0.85rem, 3vw, 1.5rem) 2.5rem;
+}
