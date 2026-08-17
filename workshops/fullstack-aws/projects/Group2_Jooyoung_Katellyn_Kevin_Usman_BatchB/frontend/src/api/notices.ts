@@ -1,11 +1,11 @@
 import { apiClient } from './client'
-import type { Notice, NoticeCreate, NoticeUpdate } from '../types'
+import type { Category, Notice, NoticeCreate, NoticeUpdate } from '../types'
 
 export async function listNotices(params?: {
   q?: string
   author?: string
   author_id?: number
-  category?: string
+  category?: Category
 }): Promise<Notice[]> {
   const { data } = await apiClient.get<Notice[]>('/api/v1/notices', { params })
   return data
