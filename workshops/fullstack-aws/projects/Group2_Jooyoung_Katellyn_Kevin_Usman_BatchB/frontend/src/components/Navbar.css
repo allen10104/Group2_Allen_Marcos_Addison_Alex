@@ -1,0 +1,96 @@
+.navbar {
+  background: #4a2a16;
+  color: #f8fafc;
+  border-bottom: 4px solid #2d170c;
+}
+
+.navbar__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.85rem clamp(0.85rem, 3vw, 1.5rem);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.navbar__brand {
+  color: #fff4c4;
+  text-decoration: none;
+  font-family: 'Caveat', cursive;
+  font-weight: 700;
+  font-size: clamp(1.55rem, 3vw, 2rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.navbar__links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.85rem;
+}
+
+.navbar__link {
+  color: #ead7b8;
+  text-decoration: none;
+  font-size: 0.95rem;
+}
+
+.navbar__link:hover,
+.navbar__link--active {
+  color: #fff4c4;
+}
+
+.navbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar__status {
+  color: #d7c4a3;
+  font-size: 0.875rem;
+}
+
+.navbar__button {
+  appearance: none;
+  border: 1px solid #c4a574;
+  background: transparent;
+  color: #fff4c4;
+  border-radius: 6px;
+  padding: 0.4rem 0.95rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.navbar__button:hover {
+  background: #5c351c;
+}
+
+.navbar__button--primary {
+  background: #ffd24a;
+  border-color: #e6b422;
+  color: #3a1f0c;
+  box-shadow: 0 2px 0 #b07d12;
+}
+
+.navbar__button--primary:hover,
+.navbar__button--primary.navbar__link--active {
+  background: #ffe27a;
+  border-color: #f0c14b;
+  color: #3a1f0c;
+}
+
+@media (max-width: 640px) {
+  .navbar__inner {
+    flex-wrap: wrap;
+  }
+
+  .navbar__status {
+    display: none;
+  }
+}
