@@ -1,4 +1,0 @@
-uvicorn[standard]
-pytest
-httpx
-python-dotenv

@@ -1,8 +1,0 @@
-# Copy to terraform.tfvars and fill in your own values. Do NOT commit
-# terraform.tfvars if it ever contains secrets (it doesn't here, but keep the
-# habit).
-
-aws_region     = "us-east-1"
-name_prefix    = "student-yourname"       # e.g. student-jane-doe - used to prefix every resource
-my_ip_cidr     = "203.0.113.5/32"          # get yours from https://checkip.amazonaws.com, then append /32
-key_pair_name  = "your-existing-ec2-keypair"
