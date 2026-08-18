@@ -1,0 +1,219 @@
+```markdown
+# Deploying a Serverless CRUD REST API with AWS Lambda & Terraform
+
+This guide details how to build and deploy a serverless REST API using a standalone Python Lambda function file, AWS API Gateway (HTTP API), and Terraform in the `us-east-1` region.
+
+---
+
+## 1. Create the Lambda Function Code
+
+In your project directory, create a file named `lambda_function.py` containing the Python CRUD logic:
+
+```python
+import json
+
+def lambda_handler(event, context):
+    # Extract HTTP method from the API Gateway HTTP API event payload
+    http_method = event.get('requestContext', {}).get('http', {}).get('method', 'GET')
+    
+    # Process CRUD operations
+    if http_method == 'GET':
+        response_body = {"message": "READ: Sample items fetched successfully"}
+    elif http_method == 'POST':
+        response_body = {"message": "CREATE: Sample item created successfully"}
+    elif http_method == 'PUT':
+        response_body = {"message": "UPDATE: Sample item updated successfully"}
+    elif http_method == 'DELETE':
+        response_body = {"message": "DELETE: Sample item removed successfully"}
+    else:
+        response_body = {"message": f"Method {http_method} not supported"}
+
+    return {
+        "statusCode": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": json.dumps(response_body)
+    }
+
+```
+
+---
+
+## 2. Create the Terraform Configuration File
+
+In the same directory, create a file named `main.tf`. Terraform will automatically zip `lambda_function.py` during execution.
+
+```hcl
+# 1. AWS Provider Setup
+provider "aws" {
+  region = "us-east-1"
+}
+
+# 2. Package External Python File into a ZIP Archive
+data "archive_file" "lambda_zip" {
+  type        = "zip"
+  source_file = "${path.module}/lambda_function.py"
+  output_path = "${path.module}/lambda.zip"
+}
+
+# 3. IAM Execution Role for Lambda
+resource "aws_iam_role" "lambda_exec" {
+  name = "serverless_crud_lambda_exec_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = {
+        Service = "lambda.amazonaws.com"
+      }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+  role       = aws_iam_role.lambda_exec.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# 4. Lambda Function Resource
+resource "aws_lambda_function" "crud_lambda" {
+  function_name    = "crud_lambda_function"
+  filename         = data.archive_file.lambda_zip.output_path
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  role             = aws_iam_role.lambda_exec.arn
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.12"
+}
+
+# 5. API Gateway (HTTP API)
+resource "aws_apigatewayv2_api" "http_api" {
+  name          = "crud_api_gateway"
+  protocol_type = "HTTP"
+}
+
+resource "aws_apigatewayv2_stage" "default_stage" {
+  api_id      = aws_apigatewayv2_api.http_api.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_apigatewayv2_integration" "lambda_integration" {
+  api_id                 = aws_apigatewayv2_api.http_api.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.crud_lambda.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "crud_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "ANY /items"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+}
+
+# 6. Grant API Gateway Permission to Invoke Lambda
+resource "aws_lambda_permission" "apigw_lambda" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.crud_lambda.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.http_api.execution_arn}/*/*"
+}
+
+# 7. Output the API Endpoint URL
+output "api_endpoint" {
+  description = "Base URL for the CRUD REST API"
+  value       = "${aws_apigatewayv2_api.http_api.api_endpoint}/items"
+}
+
+```
+
+---
+
+## 3. Initialize Terraform
+
+Download necessary provider plugins and initialize working directory:
+
+```bash
+terraform init
+
+```
+
+---
+
+## 4. Preview the Execution Plan
+
+Inspect the resources Terraform intends to create:
+
+```bash
+terraform plan
+
+```
+
+---
+
+## 5. Provision Infrastructure
+
+Deploy the Lambda function, IAM roles, and API Gateway:
+
+```bash
+terraform apply
+
+```
+
+* Type `yes` and press **Enter** when prompted.
+* Copy the printed `api_endpoint` URL output (e.g., `https://abc123xyz.execute-api.us-east-1.amazonaws.com/items`).
+
+---
+
+## 6. Test the CRUD Endpoint
+
+Replace `<YOUR_API_ENDPOINT>` with the value printed by `terraform apply`:
+
+* **READ (GET):**
+```bash
+curl -X GET <YOUR_API_ENDPOINT>
+
+```
+
+
+* **CREATE (POST):**
+```bash
+curl -X POST <YOUR_API_ENDPOINT>
+
+```
+
+
+* **UPDATE (PUT):**
+```bash
+curl -X PUT <YOUR_API_ENDPOINT>
+
+```
+
+
+* **DELETE (DELETE):**
+```bash
+curl -X DELETE <YOUR_API_ENDPOINT>
+
+```
+
+
+
+---
+
+## 7. Destroy Infrastructure
+
+Tear down all provisioned resources when finished:
+
+```bash
+terraform destroy
+
+```
+
+* Type `yes` and press **Enter** to confirm cleanup.
+
+```
+
+```
