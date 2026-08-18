@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Notice Board">
+  <!-- A notebook, replacing the Vite starter logo.
+
+       Drawn on a 32x32 grid but sized by the viewBox, so it stays sharp at
+       the 16x16 a browser tab actually renders it at. Detail disappears
+       completely at that size, which is why this is a bold silhouette with
+       three thick lines rather than a realistic notebook: anything finer
+       turns to mush.
+
+       The blue is MUI's default primary, the same colour as the AppBar, so
+       the tab icon and the top of the page match.
+
+       Solid colour rather than a white page on purpose. A mostly white icon
+       vanishes against a light tab strip, and a mostly dark one vanishes
+       against a dark theme. A saturated block reads on both. -->
+
+  <!-- Cover. -->
+  <rect x="5" y="3" width="22" height="26" rx="3" fill="#1976d2"/>
+
+  <!-- Spine. Two rects rather than one: the first supplies the rounded left
+       corners, the second squares off the right edge where the spine meets
+       the page. -->
+  <rect x="5" y="3" width="6" height="26" rx="3" fill="#0d47a1"/>
+  <rect x="8" y="3" width="3" height="26" fill="#0d47a1"/>
+
+  <!-- Binding rings. -->
+  <circle cx="8" cy="9" r="1.3" fill="#e3f2fd"/>
+  <circle cx="8" cy="16" r="1.3" fill="#e3f2fd"/>
+  <circle cx="8" cy="23" r="1.3" fill="#e3f2fd"/>
+
+  <!-- Written lines. The last one is short so the block reads as text
+       rather than as stripes. -->
+  <rect x="14" y="9.5" width="10" height="2.4" rx="1.2" fill="#ffffff"/>
+  <rect x="14" y="14.8" width="10" height="2.4" rx="1.2" fill="#ffffff"/>
+  <rect x="14" y="20.1" width="6.5" height="2.4" rx="1.2" fill="#ffffff"/>
+</svg>

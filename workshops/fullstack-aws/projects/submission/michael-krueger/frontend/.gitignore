@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Local environment files. The Vite starter does not ignore these, and it
+# needs to: anything in a VITE_ variable is compiled straight into the
+# bundle, so treating .env as committable is a habit worth not forming even
+# while the only value in it is a localhost URL.
+#
+# .env.example is the exception, it holds no real values and is meant to be
+# committed, so it is un-ignored after the pattern above.
+.env
+.env.*
+!.env.example
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

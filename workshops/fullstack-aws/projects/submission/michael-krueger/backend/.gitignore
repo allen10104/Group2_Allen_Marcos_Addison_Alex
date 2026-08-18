@@ -1,0 +1,15 @@
+# The real environment file, holding the Supabase key. Never commit it.
+.env
+.env.*
+
+# The template is the exception: it has no real values and is meant to be
+# committed, so it is un-ignored after the pattern above.
+!.env.example
+
+# Virtual environments.
+.venv/
+venv/
+
+# Byte-compiled and cached Python files.
+__pycache__/
+*.py[cod]

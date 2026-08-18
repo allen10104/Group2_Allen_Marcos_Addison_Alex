@@ -1,0 +1,18 @@
+/* Deliberately almost empty.
+
+   MUI's CssBaseline, rendered at the top of App.jsx, does the resetting and
+   sets the page background and typography from the theme. Anything added
+   here competes with it, which is why the Vite starter styles that used to
+   be in this file were removed rather than kept: they centred the body with
+   flexbox and forced a dark colour scheme, both of which fight the AppBar
+   and Container layout.
+
+   Global styles that are genuinely global still belong here. Anything that
+   styles one component is better off in that component's sx prop, where it
+   sits next to the markup it applies to. */
+
+html,
+body,
+#root {
+  height: 100%;
+}
