@@ -1,0 +1,86 @@
+```markdown
+# Provisioning an AWS S3 Bucket with Terraform
+
+This guide walks through creating and managing an Amazon S3 bucket in the `us-east-1` region using HashiCorp Terraform.
+
+---
+
+## 1. Create the Terraform Configuration File
+
+Create a new directory for your project and create a file named `main.tf`:
+
+```hcl
+# Specify the AWS Provider and Region
+provider "aws" {
+  region = "us-east-1"
+}
+
+# Define the S3 Bucket Resource
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "my-unique-tf-bucket-2026-demo" # Bucket names must be globally unique
+}
+
+```
+
+> 💡 **Note:** S3 bucket names must be globally unique across all AWS accounts worldwide. If the command fails, change `my-unique-tf-bucket-2026-demo` to a different name.
+
+---
+
+## 2. Initialize Terraform
+
+Initialize the working directory to download the required AWS provider plugin:
+
+```bash
+terraform init
+
+```
+
+---
+
+## 3. Preview the Execution Plan
+
+Run `terraform plan` to verify what resources Terraform will create without making any actual changes to AWS:
+
+```bash
+terraform plan
+
+```
+
+---
+
+## 4. Provision the S3 Bucket
+
+Apply the configuration to create the S3 bucket in AWS:
+
+```bash
+terraform apply
+
+```
+
+* When prompted, type `yes` and press **Enter** to confirm execution.
+
+### (Optional) Verify Creation via AWS CLI
+
+Confirm that your bucket was successfully created:
+
+```bash
+aws s3 ls
+
+```
+
+---
+
+## 5. Destroy / Delete the S3 Bucket
+
+To avoid unnecessary costs or cleanup resources when you are finished, destroy the provisioned bucket:
+
+```bash
+terraform destroy
+
+```
+
+* When prompted, type `yes` and press **Enter** to confirm deletion.
+
+```
+
+```
