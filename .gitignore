@@ -78,6 +78,7 @@ examples/digitalocean/YT_intro.py
 # Editor / tooling
 .idea/
 .vscode/
+.cursor/
 
 # Claude Code — share skills/agents/commands; keep per-user settings local
 .claude/settings.local.json
