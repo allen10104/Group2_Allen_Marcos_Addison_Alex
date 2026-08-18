@@ -1,0 +1,17 @@
+# Copy to terraform.tfvars and fill in real values.
+# terraform.tfvars is gitignored — never commit real secrets.
+
+student_name = "kevin-lam"
+
+aws_region   = "us-east-1"
+created_date = "16-Aug-2026"
+
+postgres_db       = "noticeboard"
+postgres_user     = "noticeboard_app"
+postgres_password = "change-me"
+
+# Defaults below are usually fine as-is:
+# instance_type   = "t2.micro"
+# git_repo_url    = "https://github.com/LumpyTacos/workshops.git"
+# git_branch      = "master"
+# project_subdir  = "workshops/fullstack-aws/projects/Group2_JooYoung_Katellyn_Kevin_Usman"
