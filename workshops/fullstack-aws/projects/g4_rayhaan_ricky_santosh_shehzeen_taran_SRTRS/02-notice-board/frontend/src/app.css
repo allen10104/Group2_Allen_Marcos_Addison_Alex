@@ -1,0 +1,307 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ------------------------------------------------------------------ */
+/* Toolbar                                                             */
+/* ------------------------------------------------------------------ */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 14px 20px;
+  background: #2b1d12;
+  color: #f4e9d8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 10;
+}
+
+.toolbar h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.toolbar-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-buttons button {
+  font: inherit;
+  padding: 9px 16px;
+  border-radius: 6px;
+  border: 1px solid #6b4f34;
+  background: #4a3320;
+  color: #f4e9d8;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.toolbar-buttons button.primary {
+  background: #1877f2;
+  border-color: #1877f2;
+}
+
+.toolbar-buttons button.active {
+  background: #f4a300;
+  border-color: #f4a300;
+  color: #2b1d12;
+}
+
+.toolbar-buttons button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ------------------------------------------------------------------ */
+/* Banners                                                             */
+/* ------------------------------------------------------------------ */
+
+.banner {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+}
+
+.banner.error {
+  background: #fde2e1;
+  color: #a4262c;
+}
+
+/* ------------------------------------------------------------------ */
+/* Board                                                               */
+/* ------------------------------------------------------------------ */
+
+.board-frame {
+  flex: 1;
+  display: flex;
+  background: #2b1d12;
+  padding: 20px;
+}
+
+.board {
+  position: relative;
+  flex: 1;
+  min-height: 600px;
+  background-image: url("./assets/corkboard.jpg");
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.5);
+}
+
+.board .empty {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Sticky notes                                                        */
+/* ------------------------------------------------------------------ */
+
+.notice-card {
+  position: absolute;
+  width: 190px;
+  min-height: 130px;
+  padding: 14px 12px 10px;
+  border-radius: 3px;
+  box-shadow: 3px 6px 10px rgba(0, 0, 0, 0.35);
+  transform: rotate(-1.5deg);
+  font-family: "Comic Sans MS", "Marker Felt", cursive, sans-serif;
+  user-select: none;
+  touch-action: none;
+}
+
+.notice-card:nth-child(3n + 1) {
+  transform: rotate(1.5deg);
+}
+
+.notice-card:nth-child(3n + 2) {
+  transform: rotate(-2deg);
+}
+
+.notice-card h3 {
+  margin: 4px 0 6px;
+  font-size: 1rem;
+  word-break: break-word;
+}
+
+.notice-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.notice-card .pin {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  filter: drop-shadow(1px 2px 1px rgba(0, 0, 0, 0.5));
+}
+
+.notice-card.movable {
+  cursor: grab;
+}
+
+.notice-card.movable.dragging {
+  cursor: grabbing;
+  box-shadow: 6px 10px 16px rgba(0, 0, 0, 0.45);
+  transition: none;
+}
+
+.notice-card.editable {
+  cursor: pointer;
+  outline: 2px dashed rgba(255, 255, 255, 0.6);
+  outline-offset: 3px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Modal                                                                */
+/* ------------------------------------------------------------------ */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  width: 100%;
+  max-width: 380px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal h2 {
+  margin-top: 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+  color: #444;
+}
+
+.field input[type="text"],
+.field input:not([type]),
+.field textarea {
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid #ccd0d5;
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.field input[type="color"] {
+  width: 100%;
+  height: 36px;
+  padding: 2px;
+  border: 1px solid #ccd0d5;
+  border-radius: 6px;
+}
+
+.field-row {
+  display: flex;
+  gap: 12px;
+}
+
+.field-row .field {
+  flex: 1;
+}
+
+.notice-preview {
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+  min-height: 70px;
+  box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.25);
+}
+
+.notice-preview strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.notice-preview p {
+  margin: 0;
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+}
+
+.modal-error {
+  background: #fde2e1;
+  color: #a4262c;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  margin-bottom: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-actions-right {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.modal-actions button {
+  font: inherit;
+  padding: 9px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.modal-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-actions .primary {
+  background: #1877f2;
+  color: #fff;
+}
+
+.modal-actions .ghost {
+  background: #eee;
+  color: #333;
+}
+
+.modal-actions .danger {
+  background: #fde2e1;
+  color: #a4262c;
+}
