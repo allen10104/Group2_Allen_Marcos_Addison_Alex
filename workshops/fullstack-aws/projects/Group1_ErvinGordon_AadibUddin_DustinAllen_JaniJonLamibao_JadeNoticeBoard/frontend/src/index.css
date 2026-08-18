@@ -1,0 +1,52 @@
+:root {
+  /* Design tokens: "RED-E-LERT" control-room theme.
+     Change these and the whole app follows. */
+  --color-bg: #121417;
+  --color-surface: #1c1f24;
+  --color-surface-raised: #23272e;
+  --color-border: #2e333b;
+
+  --color-text: #f4f4f5;
+  --color-text-muted: #9aa0a6;
+
+  --color-accent: #e63946;
+  --color-accent-dark: #b3242f;
+  --color-accent-glow: rgba(230, 57, 70, 0.35);
+
+  --font-display: 'Oswald', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  --radius: 10px;
+
+  font-family: var(--font-body);
+  /* Tells the browser this page is dark-themed, so native UI (scrollbars,
+     form controls, etc.) renders with dark styling to match. */
+  color-scheme: dark;
+}
+
+/* Universal reset: widths/heights include padding+border instead of adding to them,
+   which makes sizing elements far more predictable. */
+* {
+  box-sizing: border-box;
+}
+
+/* Removes the browser's default body margin and applies the theme's base colors. */
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+/* All headings use the display font (Oswald) with slightly wider letter-spacing,
+   and drop the browser's default heading margins so components control their own spacing. */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  letter-spacing: 0.03em;
+  margin: 0;
+}
+
+/* Buttons don't inherit font-family by default in most browsers, so this
+   forces them to match the surrounding body text instead of the OS font. */
+button {
+  font-family: inherit;
+}
