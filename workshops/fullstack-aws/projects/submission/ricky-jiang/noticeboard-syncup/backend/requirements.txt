@@ -1,0 +1,29 @@
+#web framework and ASGI server
+fastapi
+uvicorn[standard]
+
+#async database driver for MongoDB
+motor
+
+#request and response validation
+pydantic
+pydantic-settings
+
+#validates EmailStr fields (pulled in by pydantic, but not installed by default)
+email-validator
+
+#verifies access and refresh tokens
+PyJWT
+
+#password hashing
+bcrypt
+
+#FASTAPI form data parsing
+python-multipart
+
+#environment variable parsing
+python-dotenv
+
+#ASGI adapter that lets the FastAPI app run inside AWS Lambda (used by
+#app/lambda_handler.py only - the EC2 deployment via uvicorn doesn't need it)
+mangum
