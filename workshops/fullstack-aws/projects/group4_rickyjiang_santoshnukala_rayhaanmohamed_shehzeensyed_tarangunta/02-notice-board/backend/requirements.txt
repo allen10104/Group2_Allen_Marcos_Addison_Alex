@@ -1,0 +1,6 @@
+fastapi
+pydantic
+pymongo[srv]
+PyJWT
+bcrypt
+mangum
