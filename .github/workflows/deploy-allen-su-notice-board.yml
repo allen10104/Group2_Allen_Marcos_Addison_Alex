@@ -1,0 +1,50 @@
+name: Deploy Notice Board (allen-su)
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'workshops/fullstack-aws/projects/submission/allen-su/**'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: workshops/fullstack-aws/projects/submission/allen-su
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id:     ${{ secrets.ALLEN_SU_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ALLEN_SU_AWS_SECRET_ACCESS_KEY }}
+          aws-region:            ${{ secrets.ALLEN_SU_AWS_REGION }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Build and deploy Lambda
+        run: |
+          python build.py
+          aws lambda update-function-code \
+            --function-name ${{ secrets.ALLEN_SU_LAMBDA_FUNCTION_NAME }} \
+            --zip-file fileb://backend/lambda.zip
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build and deploy frontend
+        working-directory: workshops/fullstack-aws/projects/submission/allen-su/frontend
+        env:
+          VITE_API_URL: ${{ secrets.ALLEN_SU_VITE_API_URL }}
+        run: |
+          npm ci
+          npm run build
+          aws s3 sync dist/ s3://${{ secrets.ALLEN_SU_S3_BUCKET }}/ --delete
